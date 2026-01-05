@@ -198,7 +198,7 @@ export function QuickTransactionForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] sm:max-w-md max-h-[95vh] sm:max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="w-[95vw] sm:w-full sm:max-w-md md:max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto p-0 touch-manipulation">
         <DialogHeader className="px-6 pt-6 pb-4">
           <DialogTitle className="text-xl font-bold">Quick Add Transaction</DialogTitle>
         </DialogHeader>

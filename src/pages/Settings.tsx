@@ -542,9 +542,9 @@ function SettingsContent() {
   return (
     <AppLayout>
       {/* Header */}
-      <div className="mb-4 sm:mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold lg:text-3xl">Settings</h1>
-        <p className="text-sm sm:text-base text-muted-foreground mt-1">
+      <div className="mb-4 sm:mb-6 md:mb-8">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold lg:text-4xl">Settings</h1>
+        <p className="text-xs sm:text-sm md:text-base text-muted-foreground mt-1">
           Customize your KyatFlow experience
         </p>
       </div>

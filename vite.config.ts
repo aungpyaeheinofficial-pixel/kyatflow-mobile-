@@ -21,15 +21,24 @@ export default defineConfig(({ mode }) => ({
     outDir: "dist",
     sourcemap: mode === "development",
     minify: mode === "production" ? "esbuild" : false,
+    cssCodeSplit: true,
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
           ui: ['@radix-ui/react-dialog', '@radix-ui/react-select', '@radix-ui/react-tabs'],
           charts: ['recharts'],
+          date: ['date-fns'],
         },
+        chunkFileNames: 'assets/js/[name]-[hash].js',
+        entryFileNames: 'assets/js/[name]-[hash].js',
+        assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
       },
     },
     chunkSizeWarningLimit: 1000,
+    target: 'esnext',
+    modulePreload: {
+      polyfill: true,
+    },
   },
 }));

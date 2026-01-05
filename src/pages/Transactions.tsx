@@ -395,8 +395,8 @@ function TransactionsContent() {
                 <div 
                   key={tx.id} 
                   className={cn(
-                    "flex items-center gap-3 px-6 py-4 hover:bg-secondary/50 transition-colors cursor-pointer group",
-                    "animate-fade-in",
+                    "flex items-center gap-2 sm:gap-3 px-3 sm:px-4 md:px-6 py-3 sm:py-4 hover:bg-secondary/50 transition-colors cursor-pointer group touch-manipulation",
+                    "animate-fade-in min-h-[64px] sm:min-h-[72px]",
                     selectedTransactions.has(tx.id) && "bg-primary/5 border-l-2 border-l-primary"
                   )}
                   style={{ animationDelay: `${index * 30}ms` }}
@@ -408,25 +408,26 @@ function TransactionsContent() {
                       handleSelectTransaction(tx.id);
                     }}
                     onClick={(e) => e.stopPropagation()}
+                    className="shrink-0 min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px]"
                   />
-                  <div className="flex items-center gap-4 flex-1">
+                  <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-1 min-w-0">
                     <div className={cn(
-                      "flex h-12 w-12 items-center justify-center rounded-xl",
+                      "flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl shrink-0",
                       tx.type === 'income' 
                         ? "bg-success/10 text-success" 
                         : "bg-destructive/10 text-destructive"
                     )}>
                       {tx.type === 'income' ? (
-                        <TrendingUp className="h-6 w-6" />
+                        <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6" />
                       ) : (
-                        <TrendingDown className="h-6 w-6" />
+                        <TrendingDown className="h-5 w-5 sm:h-6 sm:w-6" />
                       )}
                     </div>
-                    <div className="flex-1">
-                      <p className="font-medium">{tx.notes || tx.category}</p>
-                      <div className="flex items-center gap-2 mt-1">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm sm:text-base truncate">{tx.notes || tx.category}</p>
+                      <div className="flex items-center gap-2 mt-0.5 sm:mt-1 flex-wrap">
                         <PaymentMethodBadge method={tx.paymentMethod} size="sm" />
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
                           {tx.date.toLocaleDateString('en-US', { 
                             month: 'short', 
                             day: 'numeric',
@@ -437,16 +438,20 @@ function TransactionsContent() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                     <MoneyDisplay 
                       amount={tx.type === 'income' ? tx.amount : -tx.amount} 
                       showSign 
-                      size="lg"
+                      size="md"
+                      className={cn(
+                        "text-right font-bold",
+                        tx.type === 'income' ? "text-success" : "text-destructive"
+                      )}
                     />
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity min-w-[32px] min-h-[32px] sm:min-w-[40px] sm:min-h-[40px]"
                       onClick={(e) => {
                         e.stopPropagation();
                         if (confirm('Are you sure you want to delete this transaction?')) {

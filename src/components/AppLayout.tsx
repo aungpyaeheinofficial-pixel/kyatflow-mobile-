@@ -380,11 +380,15 @@ export function AppLayout({ children, onAddTransaction }: AppLayoutProps) {
         sidebarCollapsed ? "lg:pl-20" : "lg:pl-64 xl:pl-72"
       )}>
         <div className={cn(
-          "px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-7xl mx-auto w-full",
+          "px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10 py-4 sm:py-6 lg:py-8 max-w-7xl mx-auto w-full",
           // Mobile: Add top padding for header, bottom padding for nav
           "pt-16 sm:pt-20 pb-20 sm:pb-24",
+          // Tablet: Medium padding
+          "md:pt-6 md:pb-6",
           // Desktop: Normal padding
           "lg:pt-8 lg:pb-8",
+          // Large desktop: More padding
+          "xl:pt-10 xl:pb-10",
           sidebarCollapsed && "lg:pt-20"
         )}>
           {children}

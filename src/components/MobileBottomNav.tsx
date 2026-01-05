@@ -14,8 +14,8 @@ export function MobileBottomNav() {
   const location = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border lg:hidden safe-area-bottom touch-manipulation animate-slide-in-up">
-      <div className="flex items-center justify-around h-14 sm:h-16 px-1 sm:px-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border lg:hidden safe-area-bottom touch-manipulation animate-slide-in-up shadow-lg">
+      <div className="flex items-center justify-around h-16 sm:h-16 px-1 sm:px-2 max-w-screen-xl mx-auto">
         {navItems.map((item, index) => {
           const isActive = location.pathname === item.path;
           return (

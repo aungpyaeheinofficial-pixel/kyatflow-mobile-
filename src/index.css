@@ -331,6 +331,28 @@
       padding: 0.75rem;
       gap: 0.75rem;
     }
+    
+    /* Optimize font sizes for mobile */
+    h1 {
+      font-size: 1.5rem;
+      line-height: 1.2;
+    }
+    
+    h2 {
+      font-size: 1.25rem;
+      line-height: 1.3;
+    }
+    
+    /* Better touch targets */
+    button, a {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    /* Smooth scrolling */
+    * {
+      -webkit-overflow-scrolling: touch;
+    }
   }
 
   /* Tablet optimizations */
@@ -344,6 +366,20 @@
     .tablet-spacing {
       padding: 1rem;
       gap: 1rem;
+    }
+    
+    /* Optimize for tablet */
+    h1 {
+      font-size: 2rem;
+    }
+    
+    h2 {
+      font-size: 1.5rem;
+    }
+    
+    /* Better spacing */
+    .tablet-padding {
+      padding: 1.25rem;
     }
   }
 
@@ -359,6 +395,68 @@
       padding: 1.5rem;
       gap: 1.5rem;
     }
+    
+    /* Large screen optimizations */
+    @media (min-width: 1440px) {
+      .desktop-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+    
+    /* Ultra-wide screens */
+    @media (min-width: 1920px) {
+      .desktop-grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+      
+      .container {
+        max-width: 1600px;
+      }
+    }
+  }
+  
+  /* Performance optimizations */
+  * {
+    /* GPU acceleration for smooth animations - only for animated elements */
+  }
+  
+  /* Optimize animated elements */
+  .animate-slide-up,
+  .animate-fade-in,
+  .animate-scale-in,
+  .animate-slide-in-right,
+  .animate-slide-in-left {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+  }
+  
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Optimize animations */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
+  /* Image optimization */
+  img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+  
+  /* Better font rendering */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   /* Login page animations */

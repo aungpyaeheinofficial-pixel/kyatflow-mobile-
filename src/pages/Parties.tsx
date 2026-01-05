@@ -193,26 +193,26 @@ function PartiesContent() {
               <div 
                 key={party.id} 
                 className={cn(
-                  "flex items-center justify-between px-6 py-4 hover:bg-secondary/50 transition-colors cursor-pointer group",
-                  "animate-fade-in"
+                  "flex items-center justify-between px-3 sm:px-4 md:px-6 py-3 sm:py-4 hover:bg-secondary/50 transition-colors cursor-pointer group touch-manipulation",
+                  "animate-fade-in min-h-[64px] sm:min-h-[72px]"
                 )}
                 style={{ animationDelay: `${index * 30}ms` }}
                 onClick={() => handleEditParty(party)}
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
                   <div className={cn(
-                    "flex h-12 w-12 items-center justify-center rounded-xl text-lg font-bold",
+                    "flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl text-base sm:text-lg font-bold shrink-0",
                     party.type === 'customer' 
                       ? "bg-primary/10 text-primary" 
                       : "bg-secondary text-secondary-foreground"
                   )}>
                     {party.name.charAt(0)}
                   </div>
-                  <div>
-                    <p className="font-medium">{party.name}</p>
-                    <div className="flex items-center gap-2 mt-1">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm sm:text-base truncate">{party.name}</p>
+                    <div className="flex items-center gap-2 mt-0.5 sm:mt-1 flex-wrap">
                       <span className={cn(
-                        "text-xs px-2 py-0.5 rounded-full",
+                        "text-xs px-2 py-0.5 rounded-full whitespace-nowrap",
                         party.type === 'customer' 
                           ? "bg-primary/10 text-primary" 
                           : "bg-secondary text-secondary-foreground"
@@ -220,7 +220,7 @@ function PartiesContent() {
                         {party.type === 'customer' ? 'Customer' : 'Supplier'}
                       </span>
                       {party.phone && (
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
                           <Phone className="h-3 w-3" />
                           {party.phone}
                         </span>
@@ -228,20 +228,23 @@ function PartiesContent() {
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right shrink-0 ml-2 sm:ml-4">
                   <MoneyDisplay 
                     amount={Math.abs(party.balance)} 
                     size="md"
-                    className={party.balance >= 0 ? "text-success" : "text-destructive"}
+                    className={cn(
+                      "font-bold",
+                      party.balance >= 0 ? "text-success" : "text-destructive"
+                    )}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1 whitespace-nowrap">
                     {party.balance >= 0 ? 'Receivable' : 'Payable'}
                   </p>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 min-w-[32px] min-h-[32px] sm:min-w-[40px] sm:min-h-[40px]"
                   onClick={(e) => {
                     e.stopPropagation();
                     if (confirm(`Are you sure you want to delete ${party.name}?`)) {
@@ -252,7 +255,7 @@ function PartiesContent() {
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
               </div>
-            ))}
+              ))}
             </div>
           )}
         </CardContent>

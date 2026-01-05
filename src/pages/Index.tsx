@@ -101,8 +101,8 @@ function DashboardContent() {
     <>
       <AppLayout>
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <div className="flex flex-col gap-3 sm:gap-4 md:gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 relative overflow-hidden">

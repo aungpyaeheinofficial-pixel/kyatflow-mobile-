@@ -81,7 +81,6 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
               />
               <YAxis 
                 tickFormatter={formatValue}
-                tick={{ fontSize: 11 }}
                 tick={{ fontSize: 12 }}
                 tickLine={false}
                 axisLine={false}
