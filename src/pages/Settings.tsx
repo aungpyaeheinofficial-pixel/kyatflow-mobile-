@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { QuickTransactionForm } from '@/components/QuickTransactionForm';
-import { GlobalFAB } from '@/components/GlobalFAB';
 import { CurrencyProvider, useCurrency } from '@/contexts/CurrencyContext';
 import { useMyanmarNumbers } from '@/contexts/MyanmarNumbersContext';
 import { useSetFAB } from '@/contexts/FABContext';
@@ -865,11 +864,6 @@ function SettingsContent() {
         }}
       />
 
-      <GlobalFAB
-        onQuickIncome={handleQuickIncome}
-        onQuickExpense={handleQuickExpense}
-        onRepeatLast={handleRepeatLast}
-      />
     </AppLayout>
   );
 }

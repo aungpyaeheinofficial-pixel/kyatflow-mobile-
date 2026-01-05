@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { PartyForm } from '@/components/PartyForm';
 import { QuickTransactionForm } from '@/components/QuickTransactionForm';
-import { GlobalFAB } from '@/components/GlobalFAB';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { CurrencyToggle } from '@/components/CurrencyToggle';
 import { MoneyDisplay } from '@/components/MoneyDisplay';
@@ -312,11 +311,6 @@ function PartiesContent() {
         }}
       />
 
-      <GlobalFAB
-        onQuickIncome={handleQuickIncome}
-        onQuickExpense={handleQuickExpense}
-        onRepeatLast={handleRepeatLast}
-      />
     </AppLayout>
   );
 }

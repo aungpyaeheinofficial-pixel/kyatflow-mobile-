@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { QuickTransactionForm } from '@/components/QuickTransactionForm';
-import { GlobalFAB } from '@/components/GlobalFAB';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { CurrencyToggle } from '@/components/CurrencyToggle';
 import { MoneyDisplay } from '@/components/MoneyDisplay';
@@ -489,12 +488,6 @@ function AnalyticsContent() {
             partyId: data.partyId,
           });
         }}
-      />
-
-      <GlobalFAB
-        onQuickIncome={handleQuickIncome}
-        onQuickExpense={handleQuickExpense}
-        onRepeatLast={handleRepeatLast}
       />
 
       <ReportBuilder

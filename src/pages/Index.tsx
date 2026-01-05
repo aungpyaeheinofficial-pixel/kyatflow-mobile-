@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { QuickTransactionForm } from '@/components/QuickTransactionForm';
-import { GlobalFAB } from '@/components/GlobalFAB';
 import { useSetFAB } from '@/contexts/FABContext';
 import { StatsCards } from '@/components/StatsCards';
 import { CashFlowChart } from '@/components/CashFlowChart';
@@ -242,11 +241,6 @@ function DashboardContent() {
       </AppLayout>
 
       {/* Floating Action Button - Outside AppLayout */}
-      <GlobalFAB
-        onQuickIncome={handleQuickIncome}
-        onQuickExpense={handleQuickExpense}
-        onRepeatLast={handleRepeatLast}
-      />
     </>
   );
 }
