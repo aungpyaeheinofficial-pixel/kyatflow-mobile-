@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ListSkeleton } from '@/components/EnhancedSkeleton';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -51,9 +51,18 @@ import {
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { exportTransactionsAsCSV } from '@/lib/dataExport';
+import { motion, AnimatePresence } from 'framer-motion';
+import { haptics } from '@/lib/haptics';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { EmptyState } from '@/components/EmptyState';
+import { Receipt } from 'lucide-react';
+import { useFAB } from '@/contexts/FABContext';
+import { memo } from 'react';
 
 function TransactionsContent() {
   const { toast } = useToast();
+  const { t } = useLanguage();
+  const fabHandlers = useFAB();
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('income');
   const [repeatTransaction, setRepeatTransaction] = useState<Transaction | null>(null);
@@ -222,9 +231,9 @@ function TransactionsContent() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center lg:justify-between mb-4 sm:mb-6">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold lg:text-3xl">Transactions</h1>
+          <h1 className="text-xl sm:text-2xl font-bold lg:text-3xl">{t('transactions.title')}</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">
-            View and manage all your transactions
+            {t('transactions.subtitle')}
           </p>
         </div>
         <CurrencyToggle />
@@ -237,7 +246,7 @@ function TransactionsContent() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
-                placeholder="Search transactions..." 
+                placeholder={t('transactions.searchPlaceholder')} 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -249,7 +258,7 @@ function TransactionsContent() {
                 onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
               >
                 <Filter className="h-4 w-4 mr-2" />
-                Advanced Filters
+                {t('transactions.advancedFilters')}
               </Button>
             </div>
           </div>
@@ -366,17 +375,19 @@ function TransactionsContent() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="divide-y divide-border">
-              {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className="px-6 py-4">
-                  <Skeleton className="h-16 w-full" />
-                </div>
-              ))}
-            </div>
+            <ListSkeleton count={5} />
           ) : filteredTransactions.length === 0 ? (
-            <div className="px-6 py-12 text-center">
-              <p className="text-muted-foreground">No transactions found</p>
-            </div>
+            <EmptyState
+              icon={Receipt}
+              title={t('transactions.noTransactions')}
+              description="Start tracking your finances by adding your first transaction"
+              actionLabel="Add Transaction"
+              onAction={() => {
+                if (fabHandlers) {
+                  fabHandlers.onQuickIncome();
+                }
+              }}
+            />
           ) : (
             <div className="divide-y divide-border">
               {/* Select All Header */}
@@ -386,28 +397,45 @@ function TransactionsContent() {
                   onCheckedChange={handleSelectAll}
                 />
                 <span className="text-sm text-muted-foreground">
-                  Select all ({filteredTransactions.length} transactions)
+                  {t('transactions.selectAll')} ({filteredTransactions.length} {t('transactions.title').toLowerCase()})
                 </span>
               </div>
               
-              {filteredTransactions.map((tx, index) => (
-                <div 
-                  key={tx.id} 
-                  className={cn(
-                    "flex items-center gap-2 sm:gap-3 px-3 sm:px-4 md:px-6 py-3 sm:py-4 hover:bg-secondary/50 transition-colors cursor-pointer group touch-manipulation",
-                    "animate-fade-in min-h-[64px] sm:min-h-[72px]",
-                    selectedTransactions.has(tx.id) && "bg-primary/5 border-l-2 border-l-primary"
-                  )}
-                  style={{ animationDelay: `${index * 30}ms` }}
-                  onClick={() => setSelectedTransaction(tx)}
-                >
+              <AnimatePresence mode="popLayout">
+                {filteredTransactions.map((tx, index) => (
+                  <motion.div
+                    key={tx.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, x: -20 }}
+                    transition={{ 
+                      delay: index * 0.02, 
+                      duration: 0.3,
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 25
+                    }}
+                    layout
+                    whileHover={{ x: 4, backgroundColor: "hsl(var(--secondary) / 0.5)" }}
+                    whileTap={{ scale: 0.98 }}
+                    className={cn(
+                      "flex items-center gap-3 px-4 py-4 transition-colors cursor-pointer group touch-manipulation rounded-lg",
+                      "min-h-[72px]",
+                      selectedTransactions.has(tx.id) && "bg-primary/5 border-l-2 border-l-primary"
+                    )}
+                    onClick={() => {
+                      haptics.light();
+                      setSelectedTransaction(tx);
+                    }}
+                  >
                   <Checkbox
                     checked={selectedTransactions.has(tx.id)}
                     onCheckedChange={(checked) => {
+                      haptics.selection();
                       handleSelectTransaction(tx.id);
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    className="shrink-0 min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px]"
+                    className="shrink-0 min-w-[24px] min-h-[24px]"
                   />
                   <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-1 min-w-0">
                     <div className={cn(
@@ -450,19 +478,24 @@ function TransactionsContent() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity min-w-[32px] min-h-[32px] sm:min-w-[40px] sm:min-h-[40px]"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity min-w-[40px] min-h-[40px]"
                       onClick={(e) => {
                         e.stopPropagation();
+                        haptics.medium();
                         if (confirm('Are you sure you want to delete this transaction?')) {
+                          haptics.success();
                           deleteTransaction(tx.id);
+                        } else {
+                          haptics.light();
                         }
                       }}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
-                </div>
-              ))}
+                </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
           )}
         </CardContent>

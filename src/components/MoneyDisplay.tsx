@@ -8,10 +8,11 @@ interface MoneyDisplayProps {
   amount: number;
   className?: string;
   showSign?: boolean;
+  showCurrency?: boolean;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 }
 
-export function MoneyDisplay({ amount, className, showSign = false, size = 'md' }: MoneyDisplayProps) {
+export function MoneyDisplay({ amount, className, showSign = false, showCurrency = false, size = 'md' }: MoneyDisplayProps) {
   const { showInLakhs } = useCurrency();
   const { useMyanmarNumbers: showMyanmarNumbers } = useMyanmarNumbers();
   
@@ -42,6 +43,7 @@ export function MoneyDisplay({ amount, className, showSign = false, size = 'md' 
     >
       {showSign && (isPositive ? '+' : '-')}
       {finalFormatted}
+      {showCurrency && <span className="ml-1 text-sm opacity-80">MMK</span>}
     </span>
   );
 }

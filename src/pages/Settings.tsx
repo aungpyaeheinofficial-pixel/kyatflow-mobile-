@@ -3,6 +3,7 @@ import { AppLayout } from '@/components/AppLayout';
 import { QuickTransactionForm } from '@/components/QuickTransactionForm';
 import { CurrencyProvider, useCurrency } from '@/contexts/CurrencyContext';
 import { useMyanmarNumbers } from '@/contexts/MyanmarNumbersContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useSetFAB } from '@/contexts/FABContext';
 import { Transaction } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -100,6 +101,8 @@ function SettingsContent() {
   const navigate = useNavigate();
   const { useMyanmarNumbers: showMyanmarNumbers, toggleMyanmarNumbers } = useMyanmarNumbers();
   const { showInLakhs: showLakhs, toggleCurrency: toggleLakhs } = useCurrency();
+  const { language, setLanguage, t } = useLanguage();
+  const [showLanguageDialog, setShowLanguageDialog] = useState(false);
   const [securitySettings, setSecuritySettings] = useState<SecuritySettings>(() => securityStorage.get());
   const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(() => notificationStorage.get());
   const [backupEnabled, setBackupEnabled] = useState<boolean>(() => backupStorage.get());
@@ -226,15 +229,10 @@ function SettingsContent() {
       icon: Globe,
       items: [
         { 
-          label: 'Language', 
-          description: 'English / မြန်မာ', 
+          label: t('settings.language'), 
+          description: t('settings.languageDesc'), 
           hasToggle: false,
-          onClick: () => {
-            toast({
-              title: 'Language Settings',
-              description: 'Language selection feature coming soon',
-            });
-          },
+          onClick: () => setShowLanguageDialog(true),
         },
         { 
           label: 'Myanmar Numbers', 
@@ -619,10 +617,7 @@ function SettingsContent() {
                 className="flex items-center justify-between px-6 py-4 hover:bg-destructive/5 transition-colors cursor-pointer"
                 onClick={() => {
                   authStorage.logout();
-                  toast({
-                    title: 'Logged out',
-                    description: 'You have been successfully logged out',
-                  });
+                  // Silent logout - no toast notification
                   navigate('/login');
                 }}
               >
@@ -863,6 +858,81 @@ function SettingsContent() {
           });
         }}
       />
+
+      {/* Language Selection Dialog */}
+      <Dialog open={showLanguageDialog} onOpenChange={setShowLanguageDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('settings.language')}</DialogTitle>
+            <DialogDescription>
+              {t('settings.languageDesc')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-4">
+            <button
+              onClick={() => {
+                setLanguage('en');
+                setShowLanguageDialog(false);
+                toast({
+                  title: 'Language Changed',
+                  description: 'Language set to English',
+                });
+              }}
+              className={cn(
+                "w-full p-4 rounded-xl border-2 text-left transition-all",
+                language === 'en'
+                  ? "border-primary bg-primary/10"
+                  : "border-border hover:border-primary/50"
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-semibold">English</div>
+                  <div className="text-sm text-muted-foreground">English</div>
+                </div>
+                {language === 'en' && (
+                  <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                    <div className="h-2 w-2 rounded-full bg-primary-foreground" />
+                  </div>
+                )}
+              </div>
+            </button>
+            <button
+              onClick={() => {
+                setLanguage('my');
+                setShowLanguageDialog(false);
+                toast({
+                  title: 'ဘာသာစကား ပြောင်းလဲပြီး',
+                  description: 'မြန်မာဘာသာသို့ ပြောင်းလဲပြီး',
+                });
+              }}
+              className={cn(
+                "w-full p-4 rounded-xl border-2 text-left transition-all",
+                language === 'my'
+                  ? "border-primary bg-primary/10"
+                  : "border-border hover:border-primary/50"
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-semibold">မြန်မာ</div>
+                  <div className="text-sm text-muted-foreground">Myanmar</div>
+                </div>
+                {language === 'my' && (
+                  <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                    <div className="h-2 w-2 rounded-full bg-primary-foreground" />
+                  </div>
+                )}
+              </div>
+            </button>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowLanguageDialog(false)}>
+              {t('common.close')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </AppLayout>
   );

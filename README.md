@@ -99,10 +99,39 @@ The production build will be in the `dist` directory, optimized with:
 
 ## Deployment
 
-The app can be deployed to any static hosting service:
+### Vercel (Recommended)
 
-- **Vercel**: `vercel --prod`
-- **Netlify**: Drag and drop the `dist` folder
+The app is optimized for Vercel deployment:
+
+**Option 1: Deploy via Vercel CLI**
+```sh
+# Install Vercel CLI globally
+npm i -g vercel
+
+# Deploy to production
+vercel --prod
+```
+
+**Option 2: Deploy via Vercel Dashboard**
+1. Push your code to GitHub/GitLab/Bitbucket
+2. Import your repository in [Vercel Dashboard](https://vercel.com/dashboard)
+3. Vercel will auto-detect Vite configuration
+4. Click "Deploy" - no configuration needed!
+
+**Vercel Configuration:**
+- Framework: Vite (auto-detected)
+- Build Command: `npm run build`
+- Output Directory: `dist`
+- Install Command: `npm install`
+
+The `vercel.json` file is already configured with:
+- ✅ SPA routing (all routes redirect to index.html)
+- ✅ Optimized caching headers for assets
+- ✅ Security headers (XSS protection, frame options, etc.)
+- ✅ Long-term caching for static assets
+
+**Other Hosting Options:**
+- **Netlify**: Drag and drop the `dist` folder or connect via Git
 - **GitHub Pages**: Use GitHub Actions or deploy manually
 - **Any static host**: Upload the `dist` folder contents
 

@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { motion } from 'framer-motion';
+import { memo, useMemo } from 'react';
 import { 
   ResponsiveContainer, 
   AreaChart, 
@@ -16,26 +18,31 @@ interface CashFlowChartProps {
   data: { date: string; income: number; expense: number; net: number }[];
 }
 
-export function CashFlowChart({ data }: CashFlowChartProps) {
+export const CashFlowChart = memo(function CashFlowChart({ data }: CashFlowChartProps) {
   const { showInLakhs } = useCurrency();
 
-  const chartData = data.map(d => ({
+  const chartData = useMemo(() => data.map(d => ({
     ...d,
     displayDate: new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     displayIncome: showInLakhs ? kyatsToLakhs(d.income) : d.income,
     displayExpense: showInLakhs ? kyatsToLakhs(d.expense) : d.expense,
     displayNet: showInLakhs ? kyatsToLakhs(d.net) : d.net,
-  }));
+  })), [data, showInLakhs]);
 
-  const formatValue = (value: number) => {
+  const formatValue = useMemo(() => (value: number) => {
     if (showInLakhs) {
       return `${value.toFixed(1)} L`;
     }
     return `${(value / 1000000).toFixed(1)}M`;
-  };
+  }, [showInLakhs]);
 
   return (
-    <Card className="col-span-full animate-slide-up" style={{ animationDelay: '200ms' }}>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2, duration: 0.3 }}
+    >
+      <Card className="col-span-full">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div>
@@ -118,5 +125,6 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
         </div>
       </CardContent>
     </Card>
+    </motion.div>
   );
-}
+});

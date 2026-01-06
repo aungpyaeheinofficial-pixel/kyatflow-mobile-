@@ -2,9 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MoneyDisplay } from '@/components/MoneyDisplay';
 import { Transaction, EXPENSE_CATEGORIES, TransactionCategory } from '@/lib/types';
 import { Progress } from '@/components/ui/progress';
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { cn } from '@/lib/utils';
 import { TrendingUp, Circle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { EmptyState } from '@/components/EmptyState';
 
 interface TopExpenseCategoriesProps {
   transactions: Transaction[];
@@ -66,19 +68,28 @@ export function TopExpenseCategories({ transactions, dateRange }: TopExpenseCate
 
   if (topCategories.length === 0) {
     return (
-      <Card className="animate-slide-up" style={{ animationDelay: '400ms' }}>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary" />
-            Top Expense Categories
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            No expenses found
-          </div>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.3 }}
+      >
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              Top Expense Categories
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <EmptyState
+              icon={TrendingUp}
+              title="No expenses found"
+              description="Your expense categories will appear here once you add transactions"
+              className="py-8"
+            />
+          </CardContent>
+        </Card>
+      </motion.div>
     );
   }
 
@@ -89,46 +100,68 @@ export function TopExpenseCategories({ transactions, dateRange }: TopExpenseCate
   ];
 
   return (
-    <Card className="animate-slide-up" style={{ animationDelay: '400ms' }}>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-primary" />
-          Top Expense Categories
-        </CardTitle>
-        <p className="text-xs text-muted-foreground mt-1">This month's biggest expenses</p>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {topCategories.map((item, index) => (
-          <div key={item.category} className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Circle className={cn(
-                  "h-2.5 w-2.5 fill-current",
-                  categoryColors[index]?.dot || "text-muted"
-                )} />
-                <div>
-                  <p className="text-sm font-medium">{item.label}</p>
-                  <p className="text-xs text-muted-foreground">{item.labelMm}</p>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.4, duration: 0.3 }}
+    >
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            Top Expense Categories
+          </CardTitle>
+          <p className="text-xs text-muted-foreground mt-1">This month's biggest expenses</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {topCategories.map((item, index) => (
+            <motion.div
+              key={item.category}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 + index * 0.1, duration: 0.3 }}
+              className="space-y-2"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.6 + index * 0.1, type: "spring", stiffness: 200 }}
+                  >
+                    <Circle className={cn(
+                      "h-2.5 w-2.5 fill-current",
+                      categoryColors[index]?.dot || "text-muted"
+                    )} />
+                  </motion.div>
+                  <div>
+                    <p className="text-sm font-medium">{item.label}</p>
+                    <p className="text-xs text-muted-foreground">{item.labelMm}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <MoneyDisplay amount={item.amount} size="sm" className="text-destructive" />
+                  <p className="text-xs text-muted-foreground">{item.percentage.toFixed(1)}%</p>
                 </div>
               </div>
-              <div className="text-right">
-                <MoneyDisplay amount={item.amount} size="sm" className="text-destructive" />
-                <p className="text-xs text-muted-foreground">{item.percentage.toFixed(1)}%</p>
+              <div className="relative h-2 w-full rounded-full bg-secondary overflow-hidden">
+                <motion.div 
+                  className={cn(
+                    "h-full rounded-full",
+                    categoryColors[index]?.bg || "bg-primary"
+                  )}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${item.percentage}%` }}
+                  transition={{ delay: 0.7 + index * 0.1, duration: 0.8, ease: "easeOut" }}
+                />
               </div>
-            </div>
-            <div className="relative h-2 w-full rounded-full bg-secondary overflow-hidden">
-              <div 
-                className={cn(
-                  "h-full rounded-full transition-all duration-500",
-                  categoryColors[index]?.bg || "bg-primary"
-                )}
-                style={{ width: `${item.percentage}%` }}
-              />
-            </div>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
+            </motion.div>
+          ))}
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }
+
+export default memo(TopExpenseCategories);
 

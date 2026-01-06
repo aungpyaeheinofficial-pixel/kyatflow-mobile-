@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, memo, useCallback } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { QuickTransactionForm } from '@/components/QuickTransactionForm';
 import { useSetFAB } from '@/contexts/FABContext';
@@ -11,15 +11,16 @@ import { DateFilter, DateFilterType, DateRange } from '@/components/DateFilter';
 import { StatDetailDialog } from '@/components/StatDetailDialog';
 import { TargetDialog } from '@/components/TargetDialog';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useTransactions } from '@/hooks/use-transactions';
 import { useParties } from '@/hooks/use-parties';
 import { 
   calculateStats, 
   getDailyCashFlow 
 } from '@/lib/mockData';
-import { Bell, Home, Sparkles, TrendingUp } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Home, TrendingUp } from 'lucide-react';
+import { DashboardSkeleton } from '@/components/EnhancedSkeleton';
+import { motion } from 'framer-motion';
 
 function DashboardContent() {
   const [showTransactionForm, setShowTransactionForm] = useState(false);
@@ -31,6 +32,7 @@ function DashboardContent() {
   const [repeatTransaction, setRepeatTransaction] = useState<any>(null);
   const { transactions, isLoading, createTransaction } = useTransactions();
   const { parties } = useParties();
+  const { t } = useLanguage();
   
   const currentDateRange = useMemo(() => {
     if (dateFilter === 'custom' && dateRange) {
@@ -60,31 +62,31 @@ function DashboardContent() {
   const stats = useMemo(() => calculateStats(transactions, currentDateRange, parties), [transactions, currentDateRange, parties]);
   const cashFlowData = useMemo(() => getDailyCashFlow(transactions, currentDateRange), [transactions, currentDateRange]);
   
-  const handleDateFilterChange = (filter: DateFilterType, range?: DateRange) => {
+  const handleDateFilterChange = useCallback((filter: DateFilterType, range?: DateRange) => {
     setDateFilter(filter);
     if (range) {
       setDateRange(range);
     }
-  };
+  }, []);
 
-  const handleQuickIncome = () => {
+  const handleQuickIncome = useCallback(() => {
     setTransactionType('income');
     setRepeatTransaction(null);
     setShowTransactionForm(true);
-  };
+  }, []);
 
-  const handleQuickExpense = () => {
+  const handleQuickExpense = useCallback(() => {
     setTransactionType('expense');
     setRepeatTransaction(null);
     setShowTransactionForm(true);
-  };
+  }, []);
 
-  const handleRepeatLast = () => {
+  const handleRepeatLast = useCallback(() => {
     if (transactions.length > 0) {
       setRepeatTransaction(transactions[transactions.length - 1]);
       setShowTransactionForm(true);
     }
-  };
+  }, [transactions]);
 
   const setFAB = useSetFAB();
   
@@ -100,58 +102,61 @@ function DashboardContent() {
     <>
       <AppLayout>
         {/* Header */}
-        <div className="mb-4 sm:mb-6 md:mb-8">
-          <div className="flex flex-col gap-3 sm:gap-4 md:gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mb-6"
+        >
+          <div className="flex flex-col gap-4">
             <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 relative overflow-hidden">
+                <motion.div 
+                  className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 relative overflow-hidden"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-transparent to-primary/10 opacity-50 animate-pulse-subtle" />
                   <Home className="h-6 w-6 text-primary relative z-10" />
-                </div>
+                </motion.div>
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold lg:text-4xl bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
-                    Dashboard
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
+                    {t('dashboard.title')}
                   </h1>
-                  <p className="text-sm sm:text-base text-muted-foreground mt-0.5">
-                    Welcome back! Here's your financial overview.
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    {t('dashboard.subtitle')}
                   </p>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-3">
               <CurrencyToggle />
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="hidden lg:flex hover:bg-primary/5 hover:border-primary/20 transition-all duration-300"
-              >
-                <Bell className="h-5 w-5" />
-              </Button>
             </div>
           </div>
-        </div>
+        </motion.div>
 
       {/* Date Filter */}
-      <div className="mb-6 sm:mb-8">
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1, duration: 0.3 }}
+        className="mb-6"
+      >
         <DateFilter 
           value={dateFilter} 
           dateRange={dateRange}
           onChange={handleDateFilterChange}
         />
-      </div>
+      </motion.div>
 
       {/* Stats Cards */}
       {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map(i => (
-            <Skeleton key={i} className="h-36 w-full" />
-          ))}
-        </div>
+        <DashboardSkeleton />
       ) : (
         <StatsCards 
           stats={stats} 
           transactions={transactions}
-          onCardClick={(type) => {
+          onCardClick={useCallback((type) => {
             if (type === 'target') {
               setShowTargetDialog(true);
             } else if (type === 'balance' || type === 'pending') {
@@ -162,30 +167,32 @@ function DashboardContent() {
             } else {
               setSelectedStatType(type);
             }
-          }}
+          }, [])}
           dateRange={currentDateRange}
         />
       )}
 
       {/* Charts & Recent */}
       {isLoading ? (
-        <div className="mt-6 sm:mt-8 grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
-          <Skeleton className="lg:col-span-2 h-[250px] sm:h-[300px] rounded-xl" />
-          <Skeleton className="lg:col-span-1 h-[250px] sm:h-[300px] rounded-xl" />
+        <div className="mt-6 space-y-6">
+          <DashboardSkeleton />
         </div>
       ) : (
-        <div className="mt-6 sm:mt-8 space-y-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.3 }}
+          className="mt-6 space-y-6"
+        >
           <div className="flex items-center gap-2 mb-4">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
               <TrendingUp className="h-4 w-4 text-primary" />
             </div>
-            <h2 className="text-lg font-semibold">Financial Overview</h2>
+            <h2 className="text-lg font-semibold">{t('dashboard.financialOverview')}</h2>
           </div>
-          <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <CashFlowChart data={cashFlowData} />
-            </div>
-            <div className="lg:col-span-1 space-y-4 sm:space-y-6">
+          <div className="grid gap-4 grid-cols-1">
+            <CashFlowChart data={cashFlowData} />
+            <div className="space-y-4">
               <RecentTransactions transactions={transactions} />
               <TopExpenseCategories 
                 transactions={transactions} 
@@ -193,7 +200,7 @@ function DashboardContent() {
               />
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
         {/* Quick Transaction Form Modal */}
@@ -245,10 +252,12 @@ function DashboardContent() {
   );
 }
 
-export default function Index() {
+const Index = memo(function Index() {
   return (
     <CurrencyProvider>
       <DashboardContent />
     </CurrencyProvider>
   );
-}
+});
+
+export default Index;

@@ -12,7 +12,13 @@ import { ReportBuilder } from '@/components/ReportBuilder';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useTransactions } from '@/hooks/use-transactions';
 import { useParties } from '@/hooks/use-parties';
 import { 
@@ -312,37 +318,29 @@ function AnalyticsContent() {
         <InsightsCards transactions={transactions} />
       </div>
 
-      {/* Tabs for different views */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      {/* View Selector - Mobile Friendly */}
+      <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
             <span>Detailed Analysis</span>
           </h2>
         </div>
-        <TabsList className="grid w-full grid-cols-3 animate-fade-in bg-secondary/50 p-1 rounded-lg border border-border/50">
-          <TabsTrigger 
-            value="overview" 
-            className="transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
-          >
-            Overview
-          </TabsTrigger>
-          <TabsTrigger 
-            value="comparison" 
-            className="transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
-          >
-            Time Comparison
-          </TabsTrigger>
-          <TabsTrigger 
-            value="detailed" 
-            className="transition-all duration-300 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
-          >
-            Detailed Charts
-          </TabsTrigger>
-        </TabsList>
+        <Select value={activeTab} onValueChange={setActiveTab}>
+          <SelectTrigger className="w-full h-12">
+            <SelectValue placeholder="Select view" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="overview">Overview</SelectItem>
+            <SelectItem value="comparison">Time Comparison</SelectItem>
+            <SelectItem value="detailed">Detailed Charts</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-        {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6 animate-fade-in">
+      {/* Content based on selected view */}
+      {activeTab === 'overview' && (
+        <div className="space-y-6 animate-fade-in">
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Expense Breakdown */}
             <Card className="animate-fade-in-up hover:shadow-xl transition-all duration-300 border-2 border-border/50 bg-gradient-to-br from-card via-card to-card/95" style={{ animationDelay: '200ms' }}>
@@ -458,18 +456,20 @@ function AnalyticsContent() {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        {/* Time Comparison Tab */}
-        <TabsContent value="comparison" className="animate-fade-in">
+      {activeTab === 'comparison' && (
+        <div className="animate-fade-in">
           <TimeComparisonCharts transactions={transactions} />
-        </TabsContent>
+        </div>
+      )}
 
-        {/* Detailed Charts Tab */}
-        <TabsContent value="detailed" className="animate-fade-in">
+      {activeTab === 'detailed' && (
+        <div className="animate-fade-in">
           <AdditionalCharts transactions={transactions} parties={parties} />
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
 
       <QuickTransactionForm
         open={showTransactionForm}

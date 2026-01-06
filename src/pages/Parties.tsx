@@ -10,7 +10,8 @@ import { Transaction } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ListSkeleton } from '@/components/EnhancedSkeleton';
+import { EmptyState } from '@/components/EmptyState';
 import { useParties } from '@/hooks/use-parties';
 import { useTransactions } from '@/hooks/use-transactions';
 import { Party } from '@/lib/types';
@@ -25,7 +26,14 @@ import {
   Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 function PartiesContent() {
   const [showPartyForm, setShowPartyForm] = useState(false);
@@ -141,24 +149,21 @@ function PartiesContent() {
         </Card>
       </div>
 
-      {/* Tabs & Search */}
+      {/* Filter & Search - Mobile Friendly */}
       <Card className="mb-6">
         <CardContent className="p-4">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList>
-                <TabsTrigger value="all">All ({parties.length})</TabsTrigger>
-                <TabsTrigger value="customer">
-                  <Users className="h-4 w-4 mr-1" />
-                  Customers ({customers.length})
-                </TabsTrigger>
-                <TabsTrigger value="supplier">
-                  <Building2 className="h-4 w-4 mr-1" />
-                  Suppliers ({suppliers.length})
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-            <div className="relative w-full lg:w-64">
+          <div className="flex flex-col gap-4">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-full h-12">
+                <SelectValue placeholder="Filter parties" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All ({parties.length})</SelectItem>
+                <SelectItem value="customer">Customers ({customers.length})</SelectItem>
+                <SelectItem value="supplier">Suppliers ({suppliers.length})</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
                 placeholder="Search parties..." 
@@ -175,27 +180,36 @@ function PartiesContent() {
       <Card>
         <CardContent className="p-0">
           {partiesLoading ? (
-            <div className="divide-y divide-border">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="px-6 py-4">
-                  <Skeleton className="h-16 w-full" />
-                </div>
-              ))}
-            </div>
+            <ListSkeleton count={4} />
           ) : filteredParties.length === 0 ? (
-            <div className="px-6 py-12 text-center">
-              <p className="text-muted-foreground">No parties found</p>
-            </div>
+            <EmptyState
+              icon={Users}
+              title="No parties found"
+              description={searchQuery ? "Try adjusting your search" : "Add your first customer or supplier to get started"}
+              actionLabel="Add Party"
+              onAction={handleAddParty}
+            />
           ) : (
             <div className="divide-y divide-border">
               {filteredParties.map((party, index) => (
-              <div 
-                key={party.id} 
+              <motion.div
+                key={party.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ 
+                  delay: index * 0.03, 
+                  duration: 0.3,
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 25
+                }}
+                whileHover={{ x: 4 }}
+                whileTap={{ scale: 0.98 }}
                 className={cn(
-                  "flex items-center justify-between px-3 sm:px-4 md:px-6 py-3 sm:py-4 hover:bg-secondary/50 transition-colors cursor-pointer group touch-manipulation",
-                  "animate-fade-in min-h-[64px] sm:min-h-[72px]"
+                  "flex items-center justify-between px-3 sm:px-4 md:px-6 py-3 sm:py-4 hover:bg-secondary/50 transition-colors cursor-pointer group touch-manipulation rounded-lg",
+                  "min-h-[64px] sm:min-h-[72px]"
                 )}
-                style={{ animationDelay: `${index * 30}ms` }}
                 onClick={() => handleEditParty(party)}
               >
                 <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
@@ -253,7 +267,7 @@ function PartiesContent() {
                 >
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
-              </div>
+              </motion.div>
               ))}
             </div>
           )}

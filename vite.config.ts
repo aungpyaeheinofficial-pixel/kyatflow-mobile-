@@ -29,6 +29,7 @@ export default defineConfig(({ mode }) => ({
           ui: ['@radix-ui/react-dialog', '@radix-ui/react-select', '@radix-ui/react-tabs'],
           charts: ['recharts'],
           date: ['date-fns'],
+          animations: ['framer-motion'],
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
@@ -40,5 +41,8 @@ export default defineConfig(({ mode }) => ({
     modulePreload: {
       polyfill: true,
     },
+    // Optimize for mobile and production
+    assetsInlineLimit: 4096, // Inline small assets
+    reportCompressedSize: false, // Faster builds on Vercel
   },
 }));

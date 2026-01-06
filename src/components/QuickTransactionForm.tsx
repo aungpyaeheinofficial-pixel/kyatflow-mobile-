@@ -48,6 +48,9 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { useParties } from '@/hooks/use-parties';
+import { motion, AnimatePresence } from 'framer-motion';
+import { haptics } from '@/lib/haptics';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface QuickTransactionFormProps {
   open: boolean;
@@ -76,6 +79,7 @@ export function QuickTransactionForm({
 }: QuickTransactionFormProps) {
   const { toast } = useToast();
   const { parties } = useParties();
+  const { t } = useLanguage();
   const [type, setType] = useState<TransactionType>(initialType);
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<TransactionCategory | ''>('');
@@ -160,6 +164,7 @@ export function QuickTransactionForm({
     e.preventDefault();
 
     if (!amount || !category) {
+      haptics.error();
       toast({
         title: 'Missing Information',
         description: 'Please enter amount and select a category',
@@ -168,6 +173,7 @@ export function QuickTransactionForm({
       return;
     }
 
+    haptics.success();
     onSubmit?.({
       type,
       amount: parseNumberInput(amount),
@@ -200,56 +206,73 @@ export function QuickTransactionForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] sm:w-full sm:max-w-md md:max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto p-0 touch-manipulation">
         <DialogHeader className="px-6 pt-6 pb-4">
-          <DialogTitle className="text-xl font-bold">Quick Add Transaction</DialogTitle>
+          <DialogTitle className="text-xl font-bold">{t('transactions.title')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 px-6 pb-6">
           {/* Step 1: Transaction Type */}
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <Button
-                type="button"
-                variant={type === 'income' ? 'default' : 'outline'}
-                className={cn(
-                  "h-12 sm:h-14 text-sm sm:text-base font-medium touch-manipulation",
-                  type === 'income' && "bg-success hover:bg-success/90"
-                )}
-                onClick={() => setType('income')}
-              >
-                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
-                Money In
+              <motion.div whileTap={{ scale: 0.95 }}>
+                <Button
+                  type="button"
+                  variant={type === 'income' ? 'default' : 'outline'}
+                  className={cn(
+                    "h-14 text-base font-medium touch-manipulation w-full",
+                    type === 'income' && "bg-success hover:bg-success/90"
+                  )}
+                  onClick={() => {
+                    haptics.selection();
+                    setType('income');
+                  }}
+                >
+                <TrendingUp className="h-5 w-5 mr-2" />
+                {t('transactions.moneyIn')}
               </Button>
+            </motion.div>
+            <motion.div whileTap={{ scale: 0.95 }}>
               <Button
                 type="button"
                 variant={type === 'expense' ? 'default' : 'outline'}
                 className={cn(
-                  "h-12 sm:h-14 text-sm sm:text-base font-medium touch-manipulation",
+                  "h-14 text-base font-medium touch-manipulation w-full",
                   type === 'expense' && "bg-destructive hover:bg-destructive/90"
                 )}
-                onClick={() => setType('expense')}
+                onClick={() => {
+                  haptics.selection();
+                  setType('expense');
+                }}
               >
-                <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
-                Money Out
-              </Button>
+                <TrendingDown className="h-5 w-5 mr-2" />
+                {t('transactions.moneyOut')}
+                </Button>
+              </motion.div>
             </div>
 
             {/* Quick Categories */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Quick Categories</Label>
+              <Label className="text-sm font-medium">{t('transactions.quickCategories')}</Label>
               <div className="flex flex-wrap gap-2">
                 {quickCategories.length > 0 ? (
                   quickCategories.map((cat) => (
-                    <Badge
+                    <motion.div
                       key={cat}
-                      variant={category === cat ? 'default' : 'outline'}
-                      className={cn(
-                        "cursor-pointer px-4 py-2 text-sm",
-                        category === cat && "bg-primary text-primary-foreground"
-                      )}
-                      onClick={() => setCategory(cat)}
+                      whileTap={{ scale: 0.95 }}
                     >
-                      {categories[cat]?.label || cat}
-                    </Badge>
+                      <Badge
+                        variant={category === cat ? 'default' : 'outline'}
+                        className={cn(
+                          "cursor-pointer px-4 py-2 text-sm touch-manipulation",
+                          category === cat && "bg-primary text-primary-foreground"
+                        )}
+                        onClick={() => {
+                          haptics.selection();
+                          setCategory(cat);
+                        }}
+                      >
+                        {categories[cat]?.label || cat}
+                      </Badge>
+                    </motion.div>
                   ))
                 ) : (
                   <div className="text-sm text-muted-foreground">
@@ -278,7 +301,7 @@ export function QuickTransactionForm({
 
             {/* Amount - Large Number Pad */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Amount (MMK)</Label>
+              <Label className="text-sm font-medium">{t('transactions.amount')} (MMK)</Label>
               <div className="relative">
                 <Input
                   type="text"
@@ -310,7 +333,7 @@ export function QuickTransactionForm({
 
             {/* Payment Method - Last Used Highlighted */}
             <div className="space-y-2">
-              <Label className="text-xs sm:text-sm font-medium">Payment Method</Label>
+              <Label className="text-xs sm:text-sm font-medium">{t('transactions.paymentMethod')}</Label>
               <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                 {(Object.keys(PAYMENT_METHODS) as PaymentMethod[]).map((method) => {
                   const isSelected = paymentMethod === method;
@@ -350,7 +373,7 @@ export function QuickTransactionForm({
                 variant="ghost"
                 className="w-full justify-between"
               >
-                <span className="text-sm font-medium">Additional Options</span>
+                <span className="text-sm font-medium">{t('transactions.additionalOptions')}</span>
                 {showAdvanced ? (
                   <ChevronUp className="h-4 w-4" />
                 ) : (
@@ -377,14 +400,14 @@ export function QuickTransactionForm({
               <div className="space-y-2">
                 <Label className="text-sm font-medium flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  Customer/Supplier
+                  {t('transactions.customerSupplier')}
                 </Label>
                 <Select
                   value={selectedPartyId}
                   onValueChange={setSelectedPartyId}
                 >
                   <SelectTrigger className="h-12">
-                    <SelectValue placeholder="Select party (optional)" />
+                    <SelectValue placeholder={t('transactions.selectParty')} />
                   </SelectTrigger>
                   <SelectContent>
                     {parties.map((party) => (
@@ -400,10 +423,10 @@ export function QuickTransactionForm({
               <div className="space-y-2">
                 <Label className="text-sm font-medium flex items-center gap-2">
                   <FileText className="h-4 w-4" />
-                  Notes
+                  {t('transactions.notes')}
                 </Label>
                 <Textarea
-                  placeholder="Add any notes..."
+                  placeholder={t('transactions.addNotes')}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   className="min-h-[80px]"
@@ -413,28 +436,30 @@ export function QuickTransactionForm({
           </Collapsible>
 
           {/* Submit */}
-          <Button
-            type="submit"
-            size="lg"
-            className={cn(
-              "w-full h-14 text-base font-medium",
-              type === 'income'
-                ? "bg-success hover:bg-success/90"
-                : "bg-destructive hover:bg-destructive/90"
-            )}
-          >
+          <motion.div whileTap={{ scale: 0.97 }}>
+            <Button
+              type="submit"
+              size="lg"
+              className={cn(
+                "w-full h-14 text-base font-medium touch-manipulation",
+                type === 'income'
+                  ? "bg-success hover:bg-success/90"
+                  : "bg-destructive hover:bg-destructive/90"
+              )}
+            >
             {type === 'income' ? (
               <>
                 <TrendingUp className="h-5 w-5 mr-2" />
-                Record Income
+                {t('transactions.recordIncome')}
               </>
             ) : (
               <>
                 <TrendingDown className="h-5 w-5 mr-2" />
-                Record Expense
+                {t('transactions.recordExpense')}
               </>
             )}
-          </Button>
+            </Button>
+          </motion.div>
         </form>
       </DialogContent>
     </Dialog>
