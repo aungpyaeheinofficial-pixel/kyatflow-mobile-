@@ -1,4 +1,5 @@
 // Audit Log for tracking changes
+import { logger } from './logger';
 
 export interface AuditLogEntry {
   id: string;
@@ -34,7 +35,7 @@ export const auditLog = {
 
       localStorage.setItem(AUDIT_LOG_STORAGE_KEY, JSON.stringify(logs));
     } catch (error) {
-      console.error('Error logging audit entry:', error);
+      logger.error('Error logging audit entry:', error);
     }
   },
 

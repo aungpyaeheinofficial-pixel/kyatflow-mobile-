@@ -24,12 +24,30 @@ export default defineConfig(({ mode }) => ({
     cssCodeSplit: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-select', '@radix-ui/react-tabs'],
-          charts: ['recharts'],
-          date: ['date-fns'],
-          animations: ['framer-motion'],
+        manualChunks: (id) => {
+          // Vendor chunks
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'vendor-react';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'vendor-ui';
+            }
+            if (id.includes('recharts')) {
+              return 'vendor-charts';
+            }
+            if (id.includes('framer-motion')) {
+              return 'vendor-animations';
+            }
+            if (id.includes('date-fns')) {
+              return 'vendor-date';
+            }
+            if (id.includes('@tanstack')) {
+              return 'vendor-query';
+            }
+            // Other node_modules
+            return 'vendor-other';
+          }
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
@@ -44,5 +62,9 @@ export default defineConfig(({ mode }) => ({
     // Optimize for mobile and production
     assetsInlineLimit: 4096, // Inline small assets
     reportCompressedSize: false, // Faster builds on Vercel
+    // Tree shaking
+    treeshake: {
+      moduleSideEffects: false,
+    },
   },
 }));

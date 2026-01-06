@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { authStorage } from '@/lib/auth';
 import { motion, AnimatePresence } from 'framer-motion';
 import { haptics } from '@/lib/haptics';
 
-export function Login() {
+function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -41,7 +41,7 @@ export function Login() {
     }
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     haptics.medium();
@@ -65,12 +65,14 @@ export function Login() {
         haptics.success();
         setIsSuccess(true);
         
-        // No toast notification - silent login for better UX
-        // Delay navigation for success animation
-        setTimeout(() => {
-          const from = (location.state as any)?.from?.pathname || '/';
-          navigate(from, { replace: true });
-        }, 600);
+        // Preload the dashboard component for instant navigation
+        import('./Index').then(() => {
+          // Smooth transition - minimal delay for success animation
+          setTimeout(() => {
+            const from = (location.state as any)?.from?.pathname || '/';
+            navigate(from, { replace: true });
+          }, 200);
+        });
       } else {
         haptics.error();
         setError(result.error || 'Login failed. Please try again.');
@@ -81,21 +83,21 @@ export function Login() {
         });
       }
     }, 800);
-  };
+  }, [email, password, location.state, navigate, toast]);
 
-  const handleInputFocus = (field: string) => {
+  const handleInputFocus = useCallback((field: string) => {
     setFocusedField(field);
     haptics.light();
-  };
+  }, []);
 
-  const handleInputBlur = () => {
+  const handleInputBlur = useCallback(() => {
     setFocusedField(null);
-  };
+  }, []);
 
-  const togglePasswordVisibility = () => {
+  const togglePasswordVisibility = useCallback(() => {
     haptics.light();
-    setShowPassword(!showPassword);
-  };
+    setShowPassword(prev => !prev);
+  }, []);
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-background">
@@ -201,9 +203,9 @@ export function Login() {
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
                 <CardContent className="p-8 relative z-10">
                   <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Error Message */}
+              {/* Error Message */}
                     <AnimatePresence>
-                      {error && (
+              {error && (
                         <motion.div
                           initial={{ opacity: 0, y: -10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -211,12 +213,12 @@ export function Login() {
                           transition={{ type: "spring", stiffness: 300, damping: 25 }}
                           className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium"
                         >
-                          {error}
+                  {error}
                         </motion.div>
-                      )}
+              )}
                     </AnimatePresence>
 
-                    {/* Email Field */}
+              {/* Email Field */}
                     <motion.div
                       className="space-y-2"
                       initial={{ opacity: 0, x: -20 }}
@@ -224,31 +226,31 @@ export function Login() {
                       transition={{ delay: 0.1, duration: 0.4 }}
                     >
                       <Label htmlFor="email" className="text-sm font-semibold text-foreground/90">
-                        Email Address
-                      </Label>
-                      <div className="relative">
-                        <Input
+                  Email Address
+                </Label>
+                <div className="relative">
+                  <Input
                           ref={emailInputRef}
-                          id="email"
-                          type="email"
-                          placeholder="demo@kyatflow.com"
-                          value={email}
-                          onChange={(e) => {
-                            setEmail(e.target.value);
-                            setError('');
-                          }}
+                    id="email"
+                    type="email"
+                    placeholder="demo@kyatflow.com"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setError('');
+                    }}
                           onFocus={() => handleInputFocus('email')}
                           onBlur={handleInputBlur}
-                          required
-                          className={cn(
+                    required
+                    className={cn(
                             "h-14 bg-background/50 border-2 rounded-2xl transition-all duration-300 pl-4 pr-4 text-base",
                             "focus:border-primary focus:bg-background focus:shadow-lg focus:shadow-primary/10",
                             "placeholder:text-muted-foreground/50",
                             error && "border-destructive focus:border-destructive",
                             focusedField === 'email' && "scale-[1.02]"
-                          )}
-                          disabled={isLoading}
-                          autoComplete="email"
+                    )}
+                    disabled={isLoading}
+                    autoComplete="email"
                           style={{
                             willChange: 'transform, border-color',
                             transform: 'translateZ(0)',
@@ -261,51 +263,51 @@ export function Login() {
                             className="absolute -inset-0.5 rounded-2xl bg-primary/10 -z-10"
                           />
                         )}
-                      </div>
+                </div>
                     </motion.div>
 
-                    {/* Password Field */}
+              {/* Password Field */}
                     <motion.div
                       className="space-y-2"
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.2, duration: 0.4 }}
                     >
-                      <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between">
                         <Label htmlFor="password" className="text-sm font-semibold text-foreground/90">
-                          Password
-                        </Label>
-                        <button
-                          type="button"
+                    Password
+                  </Label>
+                  <button
+                    type="button"
                           onClick={togglePasswordVisibility}
                           className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
-                        >
-                          {showPassword ? 'Hide' : 'Show'}
-                        </button>
-                      </div>
-                      <div className="relative">
-                        <Input
+                  >
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+                <div className="relative">
+                  <Input
                           ref={passwordInputRef}
-                          id="password"
-                          type={showPassword ? 'text' : 'password'}
-                          placeholder="Enter your password"
-                          value={password}
-                          onChange={(e) => {
-                            setPassword(e.target.value);
-                            setError('');
-                          }}
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setError('');
+                    }}
                           onFocus={() => handleInputFocus('password')}
                           onBlur={handleInputBlur}
-                          required
-                          className={cn(
+                    required
+                    className={cn(
                             "h-14 bg-background/50 border-2 rounded-2xl transition-all duration-300 pl-4 pr-14 text-base",
                             "focus:border-primary focus:bg-background focus:shadow-lg focus:shadow-primary/10",
                             "placeholder:text-muted-foreground/50",
                             error && "border-destructive focus:border-destructive",
                             focusedField === 'password' && "scale-[1.02]"
-                          )}
-                          disabled={isLoading}
-                          autoComplete="current-password"
+                    )}
+                    disabled={isLoading}
+                    autoComplete="current-password"
                           style={{
                             willChange: 'transform, border-color',
                             transform: 'translateZ(0)',
@@ -319,31 +321,31 @@ export function Login() {
                           />
                         )}
                         <motion.button
-                          type="button"
+                    type="button"
                           onClick={togglePasswordVisibility}
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-secondary/50"
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-5 w-5" />
-                          ) : (
-                            <Eye className="h-5 w-5" />
-                          )}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
                         </motion.button>
-                      </div>
+                </div>
                     </motion.div>
 
-                    {/* Submit Button */}
+              {/* Submit Button */}
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3, duration: 0.4 }}
                     >
-                      <Button
-                        type="submit"
+              <Button
+                type="submit"
                         className="w-full h-14 bg-gradient-to-r from-primary via-primary/95 to-primary text-white font-semibold rounded-2xl shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 text-base relative overflow-hidden group"
-                        disabled={isLoading}
+                disabled={isLoading}
                         style={{
                           willChange: 'transform',
                           transform: 'translateZ(0)',
@@ -361,7 +363,7 @@ export function Login() {
                             ease: "linear",
                           }}
                         />
-                        {isLoading ? (
+                {isLoading ? (
                           <div className="flex items-center gap-3 relative z-10">
                             <motion.div
                               className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
@@ -372,11 +374,11 @@ export function Login() {
                                 ease: "linear",
                               }}
                             />
-                            <span>Signing in...</span>
-                          </div>
-                        ) : (
+                    <span>Signing in...</span>
+                  </div>
+                ) : (
                           <div className="flex items-center gap-2 relative z-10">
-                            <span>Sign In</span>
+                    <span>Sign In</span>
                             <motion.div
                               animate={{ x: [0, 4, 0] }}
                               transition={{
@@ -385,13 +387,13 @@ export function Login() {
                                 ease: "easeInOut",
                               }}
                             >
-                              <ArrowRight className="h-5 w-5" />
+                    <ArrowRight className="h-5 w-5" />
                             </motion.div>
-                          </div>
-                        )}
-                      </Button>
+                  </div>
+                )}
+              </Button>
                     </motion.div>
-                  </form>
+            </form>
 
                   {/* Quick Demo Info */}
                   <motion.div
@@ -443,7 +445,7 @@ export function Login() {
                 transition={{ delay: 0.4 }}
                 className="text-muted-foreground"
               >
-                Redirecting to your dashboard...
+                Welcome back!
               </motion.p>
             </motion.div>
           )}
@@ -452,3 +454,5 @@ export function Login() {
     </div>
   );
 }
+
+export default memo(Login);

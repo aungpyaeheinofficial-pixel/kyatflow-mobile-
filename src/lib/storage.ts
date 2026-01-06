@@ -1,5 +1,6 @@
 // Data Storage Service - localStorage based, ready for API integration
 import { Transaction, Party } from './types';
+import { logger } from './logger';
 
 const STORAGE_KEYS = {
   TRANSACTIONS: 'kyatflow_transactions',
@@ -21,7 +22,7 @@ export const transactionStorage = {
         updatedAt: new Date(t.updatedAt),
       }));
     } catch (error) {
-      console.error('Error loading transactions:', error);
+      logger.error('Error loading transactions:', error);
       return [];
     }
   },
@@ -44,7 +45,7 @@ export const transactionStorage = {
       localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
       return transaction;
     } catch (error) {
-      console.error('Error saving transaction:', error);
+      logger.error('Error saving transaction:', error);
       throw new Error('Failed to save transaction');
     }
   },
@@ -56,7 +57,7 @@ export const transactionStorage = {
       localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(filtered));
       return true;
     } catch (error) {
-      console.error('Error deleting transaction:', error);
+      logger.error('Error deleting transaction:', error);
       return false;
     }
   },
@@ -79,7 +80,7 @@ export const partyStorage = {
         updatedAt: new Date(p.updatedAt),
       }));
     } catch (error) {
-      console.error('Error loading parties:', error);
+      logger.error('Error loading parties:', error);
       return [];
     }
   },
@@ -102,7 +103,7 @@ export const partyStorage = {
       localStorage.setItem(STORAGE_KEYS.PARTIES, JSON.stringify(parties));
       return party;
     } catch (error) {
-      console.error('Error saving party:', error);
+      logger.error('Error saving party:', error);
       throw new Error('Failed to save party');
     }
   },
@@ -114,7 +115,7 @@ export const partyStorage = {
       localStorage.setItem(STORAGE_KEYS.PARTIES, JSON.stringify(filtered));
       return true;
     } catch (error) {
-      console.error('Error deleting party:', error);
+      logger.error('Error deleting party:', error);
       return false;
     }
   },
@@ -133,7 +134,7 @@ export const settingsStorage = {
       const settings = JSON.parse(data);
       return settings[key] !== undefined ? settings[key] : defaultValue;
     } catch (error) {
-      console.error('Error loading settings:', error);
+      logger.error('Error loading settings:', error);
       return defaultValue;
     }
   },
@@ -145,7 +146,7 @@ export const settingsStorage = {
       settings[key] = value;
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
     } catch (error) {
-      console.error('Error saving settings:', error);
+      logger.error('Error saving settings:', error);
     }
   },
 

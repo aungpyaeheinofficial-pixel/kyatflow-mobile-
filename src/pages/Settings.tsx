@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { QuickTransactionForm } from '@/components/QuickTransactionForm';
 import { CurrencyProvider, useCurrency } from '@/contexts/CurrencyContext';
@@ -419,7 +419,12 @@ function SettingsContent() {
     };
     setSecuritySettings(updated);
     securityStorage.save(updated);
-    auditLog.log('PIN_SET', { action: 'PIN set successfully' });
+    auditLog.log({ 
+      action: 'update', 
+      entityType: 'settings', 
+      entityId: 'security', 
+      changes: { pin: { from: null, to: 'set' } } 
+    });
     setPin('');
     setConfirmPin('');
     setShowPinSetup(false);
@@ -469,7 +474,12 @@ function SettingsContent() {
     };
     setSecuritySettings(updated);
     securityStorage.save(updated);
-    auditLog.log('PIN_CHANGED', { action: 'PIN changed successfully' });
+    auditLog.log({ 
+      action: 'update', 
+      entityType: 'settings', 
+      entityId: 'security', 
+      changes: { pin: { from: 'old', to: 'changed' } } 
+    });
     setPin('');
     setConfirmPin('');
     setOldPin('');
@@ -505,7 +515,12 @@ function SettingsContent() {
     };
     setSecuritySettings(updated);
     securityStorage.save(updated);
-    auditLog.log('PIN_REMOVED', { action: 'PIN removed successfully' });
+    auditLog.log({ 
+      action: 'update', 
+      entityType: 'settings', 
+      entityId: 'security', 
+      changes: { pin: { from: 'set', to: null } } 
+    });
     setOldPin('');
     setShowPinChange(false);
     toast({
@@ -522,7 +537,12 @@ function SettingsContent() {
     };
     setSecuritySettings(updated);
     securityStorage.save(updated);
-    auditLog.log('TRANSACTION_LIMIT_CHANGED', { limit });
+    auditLog.log({ 
+      action: 'update', 
+      entityType: 'settings', 
+      entityId: 'security', 
+      changes: { transactionLimit: { from: securitySettings.transactionLimit, to: limit } } 
+    });
   };
 
   const handleAutoLockChange = (value: number[]) => {
@@ -533,7 +553,12 @@ function SettingsContent() {
     };
     setSecuritySettings(updated);
     securityStorage.save(updated);
-    auditLog.log('AUTO_LOCK_CHANGED', { minutes });
+    auditLog.log({ 
+      action: 'update', 
+      entityType: 'settings', 
+      entityId: 'security', 
+      changes: { autoLockMinutes: { from: securitySettings.autoLockMinutes, to: minutes } } 
+    });
   };
 
   return (
@@ -938,10 +963,12 @@ function SettingsContent() {
   );
 }
 
-export default function Settings() {
+const Settings = memo(function Settings() {
   return (
     <CurrencyProvider>
       <SettingsContent />
     </CurrencyProvider>
   );
-}
+});
+
+export default Settings;

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, memo, useCallback } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { QuickTransactionForm } from '@/components/QuickTransactionForm';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
@@ -501,10 +501,12 @@ function AnalyticsContent() {
   );
 }
 
-export default function Analytics() {
+const Analytics = memo(function Analytics() {
   return (
     <CurrencyProvider>
       <AnalyticsContent />
     </CurrencyProvider>
   );
-}
+});
+
+export default Analytics;

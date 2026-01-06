@@ -459,17 +459,38 @@
     -webkit-tap-highlight-color: transparent;
   }
   
-  /* GPU acceleration for smooth animations */
+  /* GPU acceleration for smooth animations - 60fps optimization */
   .animate-slide-up,
   .animate-fade-in,
   .animate-scale-in,
   .animate-slide-in-right,
   .animate-slide-in-left,
-  [data-framer-motion] {
+  [data-framer-motion],
+  [class*="motion-"] {
     will-change: transform, opacity;
     transform: translateZ(0);
     backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
     perspective: 1000px;
+    isolation: isolate;
+  }
+  
+  /* Optimize all interactive elements */
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Optimize cards and containers */
+  [class*="Card"],
+  [class*="card"],
+  [class*="Container"] {
+    will-change: transform;
+    transform: translateZ(0);
   }
 
   /* Bottom Navigation Bar - 60fps Optimization */
@@ -486,10 +507,25 @@
     transform: translateZ(0);
   }
   
-  /* Optimize scrolling on mobile */
+  /* Optimize scrolling on mobile - 60fps smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
   body {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
+    overscroll-behavior-x: contain;
+    /* Prevent layout shifts */
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+  
+  /* Optimize main content area */
+  main {
+    contain: layout style paint;
+    will-change: scroll-position;
   }
   
   /* Reduce motion for users who prefer it */

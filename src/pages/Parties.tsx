@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, memo, useCallback } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { PartyForm } from '@/components/PartyForm';
 import { QuickTransactionForm } from '@/components/QuickTransactionForm';
@@ -329,10 +329,12 @@ function PartiesContent() {
   );
 }
 
-export default function Parties() {
+const Parties = memo(function Parties() {
   return (
     <CurrencyProvider>
       <PartiesContent />
     </CurrencyProvider>
   );
-}
+});
+
+export default Parties;

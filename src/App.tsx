@@ -12,13 +12,19 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { LoadingSkeleton } from "./components/LoadingSkeleton";
 
 // Lazy load pages for better performance
-const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
+const Login = lazy(() => import("./pages/Login"));
 const Index = lazy(() => import("./pages/Index"));
 const Transactions = lazy(() => import("./pages/Transactions"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Parties = lazy(() => import("./pages/Parties"));
 const Settings = lazy(() => import("./pages/Settings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Preload Index component for smooth login transition
+if (typeof window !== 'undefined') {
+  // Preload dashboard when app loads
+  import("./pages/Index");
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,7 +51,7 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
-              <Suspense fallback={<LoadingSkeleton />}>
+              <Suspense fallback={null}>
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route

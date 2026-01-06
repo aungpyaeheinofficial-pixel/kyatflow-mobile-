@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { haptics } from '@/lib/haptics';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { memo, useCallback, useMemo } from 'react';
 
 const navItems = [
   { path: '/', icon: Home, key: 'nav.dashboard' },
@@ -13,13 +14,13 @@ const navItems = [
   { path: '/settings', icon: Settings, key: 'nav.settings' },
 ];
 
-export function MobileBottomNav() {
+function MobileBottomNavComponent() {
   const location = useLocation();
   const { t } = useLanguage();
 
-  const handleNavClick = () => {
+  const handleNavClick = useCallback(() => {
     haptics.light();
-  };
+  }, []);
 
   return (
     <motion.nav 
@@ -85,3 +86,5 @@ export function MobileBottomNav() {
     </motion.nav>
   );
 }
+
+export const MobileBottomNav = memo(MobileBottomNavComponent);

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, memo, useCallback } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { QuickTransactionForm } from '@/components/QuickTransactionForm';
 import { useSetFAB } from '@/contexts/FABContext';
@@ -47,6 +47,7 @@ import {
   Edit,
   Tag,
   FileEdit,
+  Receipt,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -55,9 +56,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { haptics } from '@/lib/haptics';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { EmptyState } from '@/components/EmptyState';
-import { Receipt } from 'lucide-react';
 import { useFAB } from '@/contexts/FABContext';
-import { memo } from 'react';
 
 function TransactionsContent() {
   const { toast } = useToast();
@@ -108,25 +107,27 @@ function TransactionsContent() {
     });
   }, [transactions, searchQuery, filters]);
   
-  const handleSelectAll = () => {
+  const handleSelectAll = useCallback(() => {
     if (selectedTransactions.size === filteredTransactions.length) {
       setSelectedTransactions(new Set());
     } else {
       setSelectedTransactions(new Set(filteredTransactions.map(tx => tx.id)));
     }
-  };
+  }, [selectedTransactions.size, filteredTransactions]);
   
-  const handleSelectTransaction = (id: string) => {
-    const newSelected = new Set(selectedTransactions);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
-    setSelectedTransactions(newSelected);
-  };
+  const handleSelectTransaction = useCallback((id: string) => {
+    setSelectedTransactions(prev => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(id)) {
+        newSelected.delete(id);
+      } else {
+        newSelected.add(id);
+      }
+      return newSelected;
+    });
+  }, []);
   
-  const handleBulkDelete = () => {
+  const handleBulkDelete = useCallback(() => {
     if (selectedTransactions.size === 0) return;
     if (confirm(`Are you sure you want to delete ${selectedTransactions.size} transaction(s)?`)) {
       selectedTransactions.forEach(id => deleteTransaction(id));
@@ -136,9 +137,9 @@ function TransactionsContent() {
         description: `${selectedTransactions.size} transaction(s) have been deleted.`,
       });
     }
-  };
+  }, [selectedTransactions, deleteTransaction, toast]);
   
-  const handleBulkExport = () => {
+  const handleBulkExport = useCallback(() => {
     if (selectedTransactions.size === 0) return;
     const selected = transactions.filter(tx => selectedTransactions.has(tx.id));
     exportTransactionsAsCSV(selected);
@@ -146,9 +147,9 @@ function TransactionsContent() {
       title: 'Export Successful',
       description: `${selectedTransactions.size} transaction(s) exported.`,
     });
-  };
+  }, [selectedTransactions, transactions, toast]);
   
-  const handleBulkCategorize = (category: TransactionCategory) => {
+  const handleBulkCategorize = useCallback((category: TransactionCategory) => {
     if (selectedTransactions.size === 0) return;
     const count = selectedTransactions.size;
     selectedTransactions.forEach(id => {
@@ -159,9 +160,9 @@ function TransactionsContent() {
       title: 'Category Updated',
       description: `${count} transaction(s) updated.`,
     });
-  };
+  }, [selectedTransactions, updateTransaction, toast]);
 
-  const handleBulkEdit = (field: 'category' | 'paymentMethod', value: string) => {
+  const handleBulkEdit = useCallback((field: 'category' | 'paymentMethod', value: string) => {
     if (selectedTransactions.size === 0) return;
     const count = selectedTransactions.size;
     const updates: any = { [field]: value };
@@ -178,14 +179,14 @@ function TransactionsContent() {
       title: 'Success',
       description: `${count} transaction(s) have been updated.`,
     });
-  };
+  }, [selectedTransactions, updateTransaction, toast]);
 
-  const handleBulkEditOpen = (field: 'category' | 'paymentMethod') => {
+  const handleBulkEditOpen = useCallback((field: 'category' | 'paymentMethod') => {
     setBulkEditField(field);
     setShowBulkEditDialog(true);
-  };
+  }, []);
   
-  const handleDuplicate = (transaction: Transaction) => {
+  const handleDuplicate = useCallback((transaction: Transaction) => {
     createTransaction({
       date: new Date(),
       amount: transaction.amount,
@@ -195,26 +196,26 @@ function TransactionsContent() {
       notes: transaction.notes,
       partyId: transaction.partyId,
     });
-  };
+  }, [createTransaction]);
 
-  const handleQuickIncome = () => {
+  const handleQuickIncome = useCallback(() => {
     setTransactionType('income');
     setRepeatTransaction(null);
     setShowTransactionForm(true);
-  };
+  }, []);
 
-  const handleQuickExpense = () => {
+  const handleQuickExpense = useCallback(() => {
     setTransactionType('expense');
     setRepeatTransaction(null);
     setShowTransactionForm(true);
-  };
+  }, []);
 
-  const handleRepeatLast = () => {
+  const handleRepeatLast = useCallback(() => {
     if (transactions.length > 0) {
       setRepeatTransaction(transactions[transactions.length - 1]);
       setShowTransactionForm(true);
     }
-  };
+  }, [transactions]);
 
   const setFAB = useSetFAB();
   
@@ -555,15 +556,15 @@ function TransactionsContent() {
                   </SelectTrigger>
                   <SelectContent className="max-h-64 overflow-y-auto">
                     <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Income Categories</div>
-                    {Object.entries(INCOME_CATEGORIES).map(([key, label]) => (
+                    {Object.entries(INCOME_CATEGORIES).map(([key, category]) => (
                       <SelectItem key={key} value={key}>
-                        {label}
+                        {category.label}
                       </SelectItem>
                     ))}
                     <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mt-2">Expense Categories</div>
-                    {Object.entries(EXPENSE_CATEGORIES).map(([key, label]) => (
+                    {Object.entries(EXPENSE_CATEGORIES).map(([key, category]) => (
                       <SelectItem key={key} value={key}>
-                        {label}
+                        {category.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -599,10 +600,12 @@ function TransactionsContent() {
   );
 }
 
-export default function Transactions() {
+const Transactions = memo(function Transactions() {
   return (
     <CurrencyProvider>
       <TransactionsContent />
     </CurrencyProvider>
   );
-}
+});
+
+export default Transactions;

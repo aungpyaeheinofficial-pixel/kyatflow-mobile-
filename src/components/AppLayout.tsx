@@ -8,24 +8,25 @@ import { SidebarFAB } from '@/components/SidebarFAB';
 import { useFAB } from '@/contexts/FABContext';
 import { motion } from 'framer-motion';
 import { haptics } from '@/lib/haptics';
+import { memo, useCallback } from 'react';
 
 interface AppLayoutProps {
   children: React.ReactNode;
   onAddTransaction?: () => void;
 }
 
-export function AppLayout({ children, onAddTransaction }: AppLayoutProps) {
+function AppLayoutComponent({ children, onAddTransaction }: AppLayoutProps) {
   const location = useLocation();
   const fabHandlers = useFAB();
   
-  const handleSidebarFABClick = () => {
+  const handleSidebarFABClick = useCallback(() => {
     haptics.medium();
     if (fabHandlers) {
       fabHandlers.onQuickIncome();
     } else if (onAddTransaction) {
       onAddTransaction();
     }
-  };
+  }, [fabHandlers, onAddTransaction]);
 
   return (
     <div className="min-h-screen bg-background safe-area-top">
@@ -42,16 +43,15 @@ export function AppLayout({ children, onAddTransaction }: AppLayoutProps) {
             className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/10"
             whileTap={{ scale: 0.95 }}
           >
-            <TrendingUp className="h-5 w-5 text-primary" />
+              <TrendingUp className="h-5 w-5 text-primary" />
           </motion.div>
           <h1 className="text-lg font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
-            KyatFlow
-          </h1>
+              KyatFlow
+            </h1>
         </div>
         <div className="flex items-center gap-2">
           <SidebarFAB 
             onClick={handleSidebarFABClick}
-            className="h-10 w-10 min-w-[44px] min-h-[44px]"
           />
         </div>
       </motion.header>
@@ -88,3 +88,5 @@ export function AppLayout({ children, onAddTransaction }: AppLayoutProps) {
     </div>
   );
 }
+
+export const AppLayout = memo(AppLayoutComponent);

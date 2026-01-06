@@ -149,61 +149,51 @@ function DashboardContent() {
         />
       </motion.div>
 
-      {/* Stats Cards */}
-      {isLoading ? (
-        <DashboardSkeleton />
-      ) : (
-        <StatsCards 
-          stats={stats} 
-          transactions={transactions}
-          onCardClick={useCallback((type) => {
-            if (type === 'target') {
-              setShowTargetDialog(true);
-            } else if (type === 'balance' || type === 'pending') {
-              // Navigate to relevant page or show info
-              if (type === 'pending') {
-                window.location.href = '/parties';
-              }
-            } else {
-              setSelectedStatType(type);
+      {/* Stats Cards - Show immediately with cached data */}
+      <StatsCards 
+        stats={stats} 
+        transactions={transactions}
+        onCardClick={useCallback((type) => {
+          if (type === 'target') {
+            setShowTargetDialog(true);
+          } else if (type === 'balance' || type === 'pending') {
+            // Navigate to relevant page or show info
+            if (type === 'pending') {
+              window.location.href = '/parties';
             }
-          }, [])}
-          dateRange={currentDateRange}
-        />
-      )}
+          } else {
+            setSelectedStatType(type);
+          }
+        }, [])}
+        dateRange={currentDateRange}
+      />
 
-      {/* Charts & Recent */}
-      {isLoading ? (
-        <div className="mt-6 space-y-6">
-          <DashboardSkeleton />
+      {/* Charts & Recent - Show immediately with cached data */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.3 }}
+        className="mt-6 space-y-6"
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+            <TrendingUp className="h-4 w-4 text-primary" />
+          </div>
+          <h2 className="text-lg font-semibold">{t('dashboard.financialOverview')}</h2>
         </div>
-      ) : (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.3 }}
-          className="mt-6 space-y-6"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-              <TrendingUp className="h-4 w-4 text-primary" />
-            </div>
-            <h2 className="text-lg font-semibold">{t('dashboard.financialOverview')}</h2>
+        <div className="grid gap-4 grid-cols-1">
+          <CashFlowChart data={cashFlowData} />
+          <div className="space-y-4">
+            <RecentTransactions transactions={transactions} />
+            <TopExpenseCategories 
+              transactions={transactions} 
+              dateRange={currentDateRange}
+            />
           </div>
-          <div className="grid gap-4 grid-cols-1">
-            <CashFlowChart data={cashFlowData} />
-            <div className="space-y-4">
-              <RecentTransactions transactions={transactions} />
-              <TopExpenseCategories 
-                transactions={transactions} 
-                dateRange={currentDateRange}
-              />
-            </div>
-          </div>
-        </motion.div>
-      )}
+        </div>
+      </motion.div>
 
-        {/* Quick Transaction Form Modal */}
+      {/* Quick Transaction Form Modal */}
         <QuickTransactionForm
           open={showTransactionForm}
           onOpenChange={setShowTransactionForm}

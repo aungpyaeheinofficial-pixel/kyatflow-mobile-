@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Language, translations } from '@/lib/translations';
 import { haptics } from '@/lib/haptics';
+import { logger } from '@/lib/logger';
 
 interface LanguageContextType {
   language: Language;
@@ -19,7 +20,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
           return saved as Language;
         }
       } catch (error) {
-        console.warn('Failed to read language from localStorage:', error);
+        logger.warn('Failed to read language from localStorage:', error);
       }
     }
     return 'en';
@@ -33,7 +34,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       try {
         localStorage.setItem('appLanguage', lang);
       } catch (error) {
-        console.warn('Failed to save language to localStorage:', error);
+        logger.warn('Failed to save language to localStorage:', error);
       }
     }
     
@@ -75,7 +76,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       
       return typeof value === 'string' ? value : key;
     } catch (error) {
-      console.warn(`Translation error for key: ${key}`, error);
+      logger.warn(`Translation error for key: ${key}`, error);
       return key;
     }
   };
