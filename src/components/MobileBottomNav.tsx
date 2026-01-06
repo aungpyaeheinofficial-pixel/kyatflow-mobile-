@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Receipt, BarChart3, Users, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { haptics } from '@/lib/haptics';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -31,6 +31,8 @@ export function MobileBottomNav() {
         paddingBottom: 'env(safe-area-inset-bottom)',
         height: 'calc(4rem + env(safe-area-inset-bottom))',
         minHeight: 'calc(4rem + env(safe-area-inset-bottom))',
+        willChange: 'transform',
+        transform: 'translateZ(0)',
       }}
     >
       <div className="flex items-center justify-around h-16 px-1 max-w-screen-xl mx-auto">

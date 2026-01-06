@@ -471,6 +471,20 @@
     backface-visibility: hidden;
     perspective: 1000px;
   }
+
+  /* Bottom Navigation Bar - 60fps Optimization */
+  nav[class*="fixed"][class*="bottom"] {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-font-smoothing: subpixel-antialiased;
+  }
+
+  /* Optimize backdrop blur for performance */
+  [class*="backdrop-blur"] {
+    will-change: backdrop-filter;
+    transform: translateZ(0);
+  }
   
   /* Optimize scrolling on mobile */
   body {
