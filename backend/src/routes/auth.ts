@@ -44,8 +44,9 @@ router.post('/register', validate(validateRegister), async (req, res, next) => {
     );
 
     // Generate token
+    // @ts-expect-error - JWT_EXPIRES_IN is a valid string value for expiresIn, StringValue type is not exported
     const signOptions: SignOptions = {
-      expiresIn: JWT_EXPIRES_IN as string | number,
+      expiresIn: JWT_EXPIRES_IN,
     };
     const token = jwt.sign(
       { userId: user.id, email: user.email, name: user.name },
@@ -92,8 +93,9 @@ router.post('/login', validate(validateLogin), async (req, res, next) => {
     }
 
     // Generate token
+    // @ts-expect-error - JWT_EXPIRES_IN is a valid string value for expiresIn, StringValue type is not exported
     const signOptions: SignOptions = {
-      expiresIn: JWT_EXPIRES_IN as string | number,
+      expiresIn: JWT_EXPIRES_IN,
     };
     const token = jwt.sign(
       { userId: user.id, email: user.email, name: user.name },
