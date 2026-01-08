@@ -26,22 +26,22 @@ export default defineConfig(({ mode }) => ({
     emptyOutDir: true, // Clean dist folder before build
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          // Vendor chunks - React MUST be loaded first
-          if (id.includes('node_modules')) {
-            // React and React DOM must be in the same chunk and load first
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'vendor-react';
-            }
-            // Everything else can be in vendor chunk but will load after React
-            // This ensures React is always available when other vendors load
-            return 'vendor';
-          }
-        },
+        // Let Vite automatically handle chunking based on dependencies
+        // This ensures React loads before code that depends on it
+        manualChunks: undefined,
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
         assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
       },
+    },
+    commonjsOptions: {
+      // Ensure React is properly resolved as a CommonJS module
+      include: [/node_modules/],
+      transformMixedEsModules: true,
+    },
+    optimizeDeps: {
+      // Ensure React is pre-bundled and available
+      include: ['react', 'react-dom', 'react/jsx-runtime'],
     },
     chunkSizeWarningLimit: 1000,
     target: 'esnext',
