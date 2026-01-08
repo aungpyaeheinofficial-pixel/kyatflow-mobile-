@@ -27,28 +27,15 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Vendor chunks
+          // Vendor chunks - React MUST be loaded first
           if (id.includes('node_modules')) {
+            // React and React DOM must be in the same chunk and load first
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
               return 'vendor-react';
             }
-            if (id.includes('@radix-ui')) {
-              return 'vendor-ui';
-            }
-            if (id.includes('recharts')) {
-              return 'vendor-charts';
-            }
-            if (id.includes('framer-motion')) {
-              return 'vendor-animations';
-            }
-            if (id.includes('date-fns')) {
-              return 'vendor-date';
-            }
-            if (id.includes('@tanstack')) {
-              return 'vendor-query';
-            }
-            // Other node_modules
-            return 'vendor-other';
+            // Everything else can be in vendor chunk but will load after React
+            // This ensures React is always available when other vendors load
+            return 'vendor';
           }
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
