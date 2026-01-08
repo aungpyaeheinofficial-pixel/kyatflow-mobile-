@@ -7,8 +7,9 @@ import { AppError } from '../middleware/errorHandler';
 
 const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+// Ensure JWT_SECRET is a string
+const JWT_SECRET: string = (process.env.JWT_SECRET || 'your-secret-key-change-in-production') as string;
+const JWT_EXPIRES_IN: string | number = process.env.JWT_EXPIRES_IN || '7d';
 
 // Register
 router.post('/register', validate(validateRegister), async (req, res, next) => {
@@ -46,7 +47,7 @@ router.post('/register', validate(validateRegister), async (req, res, next) => {
     const token = jwt.sign(
       { userId: user.id, email: user.email, name: user.name },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
+      { expiresIn: JWT_EXPIRES_IN as string }
     );
 
     res.status(201).json({
@@ -91,7 +92,7 @@ router.post('/login', validate(validateLogin), async (req, res, next) => {
     const token = jwt.sign(
       { userId: user.id, email: user.email, name: user.name },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
+      { expiresIn: JWT_EXPIRES_IN as string }
     );
 
     res.json({

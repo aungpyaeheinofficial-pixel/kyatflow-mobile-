@@ -23,7 +23,7 @@ export const authenticateToken = (
     return next(new AppError('Authentication required', 401));
   }
 
-  const jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+  const jwtSecret: string = (process.env.JWT_SECRET || 'your-secret-key-change-in-production') as string;
 
   jwt.verify(token, jwtSecret, (err, decoded: any) => {
     if (err) {
