@@ -1,7 +1,6 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-import { initializeStorage } from "./lib/storage";
 
 // Error handler for initialization errors
 window.addEventListener('error', (event) => {
@@ -16,12 +15,8 @@ window.addEventListener('unhandledrejection', (event) => {
   console.error('Unhandled promise rejection:', event.reason);
 });
 
-// Initialize storage with mock data if empty
-try {
-  initializeStorage();
-} catch (error) {
-  console.error('Storage initialization error:', error);
-}
+// Note: All data is now saved to PostgreSQL database via backend API
+// No mock data initialization needed - data is fetched from backend on app load
 
 // Check if root element exists
 const rootElement = document.getElementById("root");
