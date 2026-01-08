@@ -1,87 +1,166 @@
-// API Service Layer - Abstracted for easy backend integration
+// API Service Layer - Backend API Integration
 import { Transaction, Party } from './types';
-import { transactionStorage, partyStorage } from './storage';
+import { authStorage } from './auth';
 
-// This layer abstracts data operations, making it easy to switch from localStorage to a real API
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:9800/api';
+
+// Helper function to get auth token
+const getAuthToken = (): string | null => {
+  return authStorage.getToken();
+};
+
+// Helper function for API requests
+const apiRequest = async <T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> => {
+  const token = getAuthToken();
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: { message: 'Request failed' } }));
+    throw new Error(error.error?.message || 'Request failed');
+  }
+
+  const data = await response.json();
+  return data.success ? data.data : data;
+};
+
+// Transform backend data to frontend format
+const transformTransaction = (t: any): Transaction => ({
+  id: t.id,
+  date: new Date(t.date),
+  amount: parseFloat(t.amount),
+  type: t.type,
+  category: t.category,
+  paymentMethod: t.payment_method,
+  notes: t.notes || undefined,
+  receiptUrl: t.receipt_url || undefined,
+  partyId: t.party_id || undefined,
+  createdAt: new Date(t.created_at),
+  updatedAt: new Date(t.updated_at),
+});
+
+const transformParty = (p: any): Party => ({
+  id: p.id,
+  name: p.name,
+  phone: p.phone || undefined,
+  type: p.type,
+  balance: parseFloat(p.balance),
+  createdAt: new Date(p.created_at),
+  updatedAt: new Date(p.updated_at),
+});
 
 export const transactionApi = {
   getAll: async (): Promise<Transaction[]> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 100));
-    return transactionStorage.getAll();
+    const data = await apiRequest<any[]>('/transactions');
+    return Array.isArray(data) ? data.map(transformTransaction) : [];
   },
 
   getById: async (id: string): Promise<Transaction | null> => {
-    await new Promise(resolve => setTimeout(resolve, 50));
-    const transactions = transactionStorage.getAll();
-    return transactions.find(t => t.id === id) || null;
+    try {
+      const data = await apiRequest<any>(`/transactions/${id}`);
+      return transformTransaction(data);
+    } catch (error) {
+      return null;
+    }
   },
 
   create: async (transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>): Promise<Transaction> => {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    const newTransaction: Transaction = {
-      ...transaction,
-      id: `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    return transactionStorage.save(newTransaction);
+    const data = await apiRequest<any>('/transactions', {
+      method: 'POST',
+      body: JSON.stringify({
+        date: transaction.date.toISOString(),
+        amount: transaction.amount,
+        type: transaction.type,
+        category: transaction.category,
+        paymentMethod: transaction.paymentMethod,
+        notes: transaction.notes,
+        receiptUrl: transaction.receiptUrl,
+        partyId: transaction.partyId,
+      }),
+    });
+    return transformTransaction(data);
   },
 
   update: async (id: string, updates: Partial<Transaction>): Promise<Transaction> => {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    const transactions = transactionStorage.getAll();
-    const existing = transactions.find(t => t.id === id);
-    if (!existing) {
-      throw new Error('Transaction not found');
-    }
-    const updated = { ...existing, ...updates, updatedAt: new Date() };
-    return transactionStorage.save(updated);
+    const data = await apiRequest<any>(`/transactions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        date: updates.date?.toISOString(),
+        amount: updates.amount,
+        type: updates.type,
+        category: updates.category,
+        paymentMethod: updates.paymentMethod,
+        notes: updates.notes,
+        receiptUrl: updates.receiptUrl,
+        partyId: updates.partyId,
+      }),
+    });
+    return transformTransaction(data);
   },
 
   delete: async (id: string): Promise<boolean> => {
-    await new Promise(resolve => setTimeout(resolve, 150));
-    return transactionStorage.delete(id);
+    await apiRequest(`/transactions/${id}`, { method: 'DELETE' });
+    return true;
   },
 };
 
 export const partyApi = {
   getAll: async (): Promise<Party[]> => {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    return partyStorage.getAll();
+    const data = await apiRequest<any[]>('/parties');
+    return Array.isArray(data) ? data.map(transformParty) : [];
   },
 
   getById: async (id: string): Promise<Party | null> => {
-    await new Promise(resolve => setTimeout(resolve, 50));
-    const parties = partyStorage.getAll();
-    return parties.find(p => p.id === id) || null;
+    try {
+      const data = await apiRequest<any>(`/parties/${id}`);
+      return transformParty(data);
+    } catch (error) {
+      return null;
+    }
   },
 
   create: async (party: Omit<Party, 'id' | 'createdAt' | 'updatedAt'>): Promise<Party> => {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    const newParty: Party = {
-      ...party,
-      id: `party_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    return partyStorage.save(newParty);
+    const data = await apiRequest<any>('/parties', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: party.name,
+        phone: party.phone,
+        type: party.type,
+        balance: party.balance,
+      }),
+    });
+    return transformParty(data);
   },
 
   update: async (id: string, updates: Partial<Party>): Promise<Party> => {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    const parties = partyStorage.getAll();
-    const existing = parties.find(p => p.id === id);
-    if (!existing) {
-      throw new Error('Party not found');
-    }
-    const updated = { ...existing, ...updates, updatedAt: new Date() };
-    return partyStorage.save(updated);
+    const data = await apiRequest<any>(`/parties/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        name: updates.name,
+        phone: updates.phone,
+        type: updates.type,
+      }),
+    });
+    return transformParty(data);
   },
 
   delete: async (id: string): Promise<boolean> => {
-    await new Promise(resolve => setTimeout(resolve, 150));
-    return partyStorage.delete(id);
+    await apiRequest(`/parties/${id}`, { method: 'DELETE' });
+    return true;
   },
 };
 

@@ -55,9 +55,8 @@ function Login() {
 
     setIsLoading(true);
 
-    // Simulate API call delay
-    setTimeout(() => {
-      const result = authStorage.login(email, password);
+    try {
+      const result = await authStorage.login(email, password);
       
       setIsLoading(false);
 
@@ -82,7 +81,16 @@ function Login() {
           variant: 'destructive',
         });
       }
-    }, 800);
+    } catch (error) {
+      setIsLoading(false);
+      haptics.error();
+      setError('An error occurred. Please try again.');
+      toast({
+        title: 'Login Failed',
+        description: 'An error occurred. Please try again.',
+        variant: 'destructive',
+      });
+    }
   }, [email, password, location.state, navigate, toast]);
 
   const handleInputFocus = useCallback((field: string) => {

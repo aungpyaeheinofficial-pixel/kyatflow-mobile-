@@ -1,5 +1,5 @@
-// Simple authentication utilities
-// In production, replace with proper backend authentication
+// Authentication utilities - Backend API Integration
+import { logger } from './logger';
 
 export interface User {
   id: string;
@@ -11,21 +11,7 @@ export interface User {
 const AUTH_STORAGE_KEY = 'kyatflow_auth';
 const USER_STORAGE_KEY = 'kyatflow_user';
 
-// Mock users for demo (in production, this would be handled by backend)
-const MOCK_USERS = [
-  {
-    id: '1',
-    email: 'demo@kyatflow.com',
-    password: 'demo123', // In production, never store passwords in plain text
-    name: 'Demo User',
-  },
-  {
-    id: '2',
-    email: 'admin@kyatflow.com',
-    password: 'admin123',
-    name: 'Admin User',
-  },
-];
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:9800/api';
 
 export const authStorage = {
   // Check if user is authenticated
@@ -71,43 +57,60 @@ export const authStorage = {
     }
   },
 
-  // Login
-  login: (email: string, password: string): { success: boolean; user?: User; error?: string } => {
-    // Find user in mock users
-    const user = MOCK_USERS.find(u => u.email === email && u.password === password);
-    
-    if (!user) {
+  // Login - Backend API
+  login: async (email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> => {
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: data.error?.message || 'Login failed',
+        };
+      }
+
+      if (data.success && data.token && data.user) {
+        // Decode JWT to get expiry (basic check)
+        const tokenParts = data.token.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          const expiresAt = new Date(payload.exp * 1000);
+
+          // Store auth data
+          localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({
+            token: data.token,
+            expiresAt: expiresAt.toISOString(),
+          }));
+
+          // Store user data
+          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
+
+          return {
+            success: true,
+            user: data.user,
+          };
+        }
+      }
+
       return {
         success: false,
-        error: 'Invalid email or password',
+        error: 'Invalid response from server',
+      };
+    } catch (error) {
+      logger.error('Login error:', error);
+      return {
+        success: false,
+        error: 'Network error. Please check your connection.',
       };
     }
-
-    // Create user object (without password)
-    const userData: User = {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-    };
-
-    // Generate token (in production, this would come from backend)
-    const token = `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
-
-    // Store auth data
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({
-      token,
-      expiresAt: expiresAt.toISOString(),
-    }));
-
-    // Store user data
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
-
-    return {
-      success: true,
-      user: userData,
-    };
   },
 
   // Logout
@@ -116,30 +119,60 @@ export const authStorage = {
     localStorage.removeItem(USER_STORAGE_KEY);
   },
 
-  // Register (for future use)
-  register: (email: string, password: string, name: string): { success: boolean; user?: User; error?: string } => {
-    // Check if user already exists
-    const existingUser = MOCK_USERS.find(u => u.email === email);
-    if (existingUser) {
+  // Register - Backend API
+  register: async (email: string, password: string, name: string): Promise<{ success: boolean; user?: User; error?: string }> => {
+    try {
+      const response = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, name }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: data.error?.message || 'Registration failed',
+        };
+      }
+
+      if (data.success && data.token && data.user) {
+        // Decode JWT to get expiry
+        const tokenParts = data.token.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          const expiresAt = new Date(payload.exp * 1000);
+
+          // Store auth data
+          localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({
+            token: data.token,
+            expiresAt: expiresAt.toISOString(),
+          }));
+
+          // Store user data
+          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
+
+          return {
+            success: true,
+            user: data.user,
+          };
+        }
+      }
+
       return {
         success: false,
-        error: 'User with this email already exists',
+        error: 'Invalid response from server',
+      };
+    } catch (error) {
+      logger.error('Registration error:', error);
+      return {
+        success: false,
+        error: 'Network error. Please check your connection.',
       };
     }
-
-    // In production, this would be handled by backend
-    // For now, we'll just add to mock users
-    const newUser = {
-      id: String(MOCK_USERS.length + 1),
-      email,
-      password, // In production, hash this
-      name,
-    };
-
-    MOCK_USERS.push(newUser);
-
-    // Auto login after registration
-    return authStorage.login(email, password);
   },
 };
 
