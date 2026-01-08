@@ -17,11 +17,13 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  base: '/', // Ensure assets are loaded from root
   build: {
     outDir: "dist",
     sourcemap: mode === "development",
     minify: mode === "production" ? "esbuild" : false,
     cssCodeSplit: true,
+    emptyOutDir: true, // Clean dist folder before build
     rollupOptions: {
       output: {
         manualChunks: (id) => {
