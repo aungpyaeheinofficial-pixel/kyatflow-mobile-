@@ -28,7 +28,7 @@ export default defineConfig(({ mode }) => ({
       output: {
         // Let Vite automatically handle chunking based on dependencies
         // This ensures React loads before code that depends on it
-        manualChunks: undefined,
+        // manualChunks removed - let Vite handle it automatically
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
         assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
