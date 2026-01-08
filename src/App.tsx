@@ -51,7 +51,7 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
-              <Suspense fallback={null}>
+              <Suspense fallback={<LoadingSkeleton />}>
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   <Route
