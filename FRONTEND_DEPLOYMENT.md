@@ -115,38 +115,59 @@ pm2 start ecosystem.frontend.config.js
 pm2 save
 ```
 
-### Option 2: Deploy with Nginx (Recommended for Production)
+### Option 2: Deploy with Nginx on Port 3555 (Recommended for Production)
 
-#### 1. Install Nginx
+#### Quick Setup (Automated Script)
+
+```bash
+# Run the setup script
+sudo bash nginx-3555-setup.sh
+```
+
+#### Manual Setup Steps
+
+##### 1. Install Nginx
 
 ```bash
 sudo apt update
 sudo apt install nginx
 ```
 
-#### 2. Build Frontend
+##### 2. Build Frontend
 
 ```bash
+cd /var/www/html/kyatflow-mobile-
 npm run build
 ```
 
-#### 3. Copy Build Files
+##### 3. Create Directory and Copy Build Files
 
 ```bash
-sudo cp -r dist/* /var/www/html/
-# OR create a specific directory
+# Create directory
 sudo mkdir -p /var/www/kyatflow
+
+# Copy build files
 sudo cp -r dist/* /var/www/kyatflow/
+
+# Set proper permissions
+sudo chown -R www-data:www-data /var/www/kyatflow
+sudo chmod -R 755 /var/www/kyatflow
 ```
 
-#### 4. Configure Nginx
+##### 4. Configure Nginx for Port 3555
 
 Create `/etc/nginx/sites-available/kyatflow`:
 
+```bash
+sudo nano /etc/nginx/sites-available/kyatflow
+```
+
+Paste this configuration:
+
 ```nginx
 server {
-    listen 80;
-    server_name your-domain.com;  # Replace with your domain or IP
+    listen 3555;
+    server_name _;  # Listen on all server names/IPs
 
     root /var/www/kyatflow;
     index index.html;
@@ -156,18 +177,19 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
-    # API proxy to backend
-    location /api {
-        proxy_pass http://localhost:9800;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-    }
+    # API proxy to backend (optional - if you want to proxy through Nginx)
+    # If frontend calls /api directly, uncomment this:
+    # location /api {
+    #     proxy_pass http://localhost:9800;
+    #     proxy_http_version 1.1;
+    #     proxy_set_header Upgrade $http_upgrade;
+    #     proxy_set_header Connection 'upgrade';
+    #     proxy_set_header Host $host;
+    #     proxy_set_header X-Real-IP $remote_addr;
+    #     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    #     proxy_set_header X-Forwarded-Proto $scheme;
+    #     proxy_cache_bypass $http_upgrade;
+    # }
 
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
@@ -178,22 +200,69 @@ server {
     gzip on;
     gzip_vary on;
     gzip_min_length 1024;
-    gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/json;
+    gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/json application/javascript;
 
     # Cache static assets
-    location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot)$ {
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot|webp)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
 }
 ```
 
-#### 5. Enable Site
+##### 5. Enable Site
 
 ```bash
+# Create symlink to enable site
 sudo ln -s /etc/nginx/sites-available/kyatflow /etc/nginx/sites-enabled/
-sudo nginx -t  # Test configuration
-sudo systemctl restart nginx
+
+# Test Nginx configuration
+sudo nginx -t
+
+# If test passes, reload Nginx
+sudo systemctl reload nginx
+```
+
+##### 6. Configure Firewall (if using UFW)
+
+```bash
+# Allow port 3555
+sudo ufw allow 3555/tcp
+
+# Check status
+sudo ufw status
+```
+
+##### 7. Verify Deployment
+
+```bash
+# Check Nginx is running
+sudo systemctl status nginx
+
+# Test locally
+curl http://localhost:3555
+
+# Test from outside (use your VPS IP)
+curl http://your-vps-ip:3555
+```
+
+##### 8. Update Frontend .env
+
+Make sure your frontend `.env` has:
+```env
+VITE_API_URL=http://your-vps-ip:9800/api
+```
+
+##### 9. Update Backend CORS
+
+Make sure your backend `.env` has:
+```env
+FRONTEND_URL=http://your-vps-ip:3555
+```
+
+Then restart backend:
+```bash
+pm2 restart kyatflow-backend
 ```
 
 ### Option 3: Deploy to Vercel (Easiest)
