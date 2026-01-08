@@ -33,6 +33,10 @@ server {
     root /var/www/kyatflow;
     index index.html;
 
+    # MIME types (ensure CSS/JS are served with correct types)
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
     # Frontend routes - SPA routing
     location / {
         try_files $uri $uri/ /index.html;

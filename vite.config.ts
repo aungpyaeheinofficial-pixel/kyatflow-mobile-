@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => ({
     outDir: "dist",
     sourcemap: mode === "development",
     minify: mode === "production" ? "esbuild" : false,
-    cssCodeSplit: true,
+    cssCodeSplit: false, // Disable CSS code splitting to ensure main CSS is always loaded
     emptyOutDir: true, // Clean dist folder before build
     rollupOptions: {
       output: {
@@ -62,7 +62,7 @@ export default defineConfig(({ mode }) => ({
       polyfill: true,
     },
     // Optimize for mobile and production
-    assetsInlineLimit: 4096, // Inline small assets
+    assetsInlineLimit: 0, // Don't inline CSS - always use external stylesheet for debugging
     reportCompressedSize: false, // Faster builds on Vercel
     // Tree shaking
     treeshake: {
