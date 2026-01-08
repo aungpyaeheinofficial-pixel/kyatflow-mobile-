@@ -28,7 +28,7 @@ echo "📝 Creating Nginx configuration..."
 sudo tee /etc/nginx/sites-available/kyatflow > /dev/null <<'EOF'
 server {
     listen 3555;
-    server_name _;
+    server_name _;  # Listen on all server names/IPs (change to your IP if needed)
 
     root /var/www/kyatflow;
     index index.html;
