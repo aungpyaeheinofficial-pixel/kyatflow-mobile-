@@ -1,6 +1,6 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import pool from '../db/connection';
 import { validate, validateLogin, validateRegister } from '../middleware/validation';
 import { AppError } from '../middleware/errorHandler';
@@ -9,7 +9,7 @@ const router = express.Router();
 
 // Ensure JWT_SECRET is a string
 const JWT_SECRET: string = (process.env.JWT_SECRET || 'your-secret-key-change-in-production') as string;
-const JWT_EXPIRES_IN: string | number = process.env.JWT_EXPIRES_IN || '7d';
+const JWT_EXPIRES_IN: string = (process.env.JWT_EXPIRES_IN || '7d') as string;
 
 // Register
 router.post('/register', validate(validateRegister), async (req, res, next) => {
@@ -44,10 +44,13 @@ router.post('/register', validate(validateRegister), async (req, res, next) => {
     );
 
     // Generate token
+    const signOptions: SignOptions = {
+      expiresIn: JWT_EXPIRES_IN,
+    };
     const token = jwt.sign(
       { userId: user.id, email: user.email, name: user.name },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN as string }
+      signOptions
     );
 
     res.status(201).json({
@@ -89,10 +92,13 @@ router.post('/login', validate(validateLogin), async (req, res, next) => {
     }
 
     // Generate token
+    const signOptions: SignOptions = {
+      expiresIn: JWT_EXPIRES_IN,
+    };
     const token = jwt.sign(
       { userId: user.id, email: user.email, name: user.name },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN as string }
+      signOptions
     );
 
     res.json({
