@@ -4,6 +4,8 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import pool from '../db/connection';
 import { validate, validateLogin, validateRegister } from '../middleware/validation';
 import { AppError } from '../middleware/errorHandler';
+import { authenticateToken } from '../middleware/auth';
+import { requireAdmin } from '../middleware/admin';
 import nodemailer from 'nodemailer';
 
 const router = express.Router();
@@ -123,7 +125,7 @@ router.post('/verify-code', async (req: Request, res: Response, next: NextFuncti
 });
 
 // Generate Code (Admin only)
-router.post('/generate-code', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/generate-code', authenticateToken, requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
     // In production, check for admin role/email here
 
@@ -280,7 +282,7 @@ router.get('/me', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // Start Trial
-router.post('/start-trial', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/start-trial', authenticateToken, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { userId } = req.body;
     if (!userId) {
@@ -317,7 +319,7 @@ router.post('/start-trial', async (req: Request, res: Response, next: NextFuncti
 });
 
 // Admin: Get All Users
-router.get('/admin/users', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/admin/users', authenticateToken, requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Basic protection: check header secret or assume frontend handles it for now (MVP)
     // Production: Verify JWT role === 'admin'
@@ -332,7 +334,7 @@ router.get('/admin/users', async (req: Request, res: Response, next: NextFunctio
 });
 
 // Admin: Manually Update Status
-router.post('/admin/update-status', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/admin/update-status', authenticateToken, requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { userId, status, days } = req.body;
 
