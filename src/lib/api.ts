@@ -186,6 +186,25 @@ export const subscriptionApi = {
       body: JSON.stringify({}),
     });
   },
+
+  startTrial: async (userId: string): Promise<any> => {
+    return apiRequest<any>('/start-trial', {
+      method: 'POST',
+      body: JSON.stringify({ userId }),
+    });
+  },
+
+  getAllUsers: async (): Promise<any[]> => {
+    const data = await apiRequest<any>('/admin/users');
+    return data.users;
+  },
+
+  updateUserStatus: async (userId: string, status: string, days?: number): Promise<any> => {
+    return apiRequest<any>('/admin/update-status', {
+      method: 'POST',
+      body: JSON.stringify({ userId, status, days }),
+    });
+  }
 };
 
 // Export data as JSON

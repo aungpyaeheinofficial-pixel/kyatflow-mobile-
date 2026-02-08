@@ -1,4 +1,4 @@
-import { 
+import {
   TrendingUp,
 } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
@@ -9,6 +9,7 @@ import { useFAB } from '@/contexts/FABContext';
 import { motion } from 'framer-motion';
 import { haptics } from '@/lib/haptics';
 import { memo, useCallback } from 'react';
+import { StartTrialBanner } from '@/components/StartTrialBanner';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -18,7 +19,7 @@ interface AppLayoutProps {
 function AppLayoutComponent({ children, onAddTransaction }: AppLayoutProps) {
   const location = useLocation();
   const fabHandlers = useFAB();
-  
+
   const handleSidebarFABClick = useCallback(() => {
     haptics.medium();
     if (fabHandlers) {
@@ -31,7 +32,7 @@ function AppLayoutComponent({ children, onAddTransaction }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-background safe-area-top">
       {/* Simple Mobile Header - Logo Only */}
-      <motion.header 
+      <motion.header
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -39,18 +40,18 @@ function AppLayoutComponent({ children, onAddTransaction }: AppLayoutProps) {
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
         <div className="flex items-center gap-2">
-          <motion.div 
+          <motion.div
             className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/10"
             whileTap={{ scale: 0.95 }}
           >
-              <TrendingUp className="h-5 w-5 text-primary" />
+            <TrendingUp className="h-5 w-5 text-primary" />
           </motion.div>
           <h1 className="text-lg font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
-              KyatFlow
-            </h1>
+            KyatFlow
+          </h1>
         </div>
         <div className="flex items-center gap-2">
-          <SidebarFAB 
+          <SidebarFAB
             onClick={handleSidebarFABClick}
           />
         </div>
@@ -68,7 +69,7 @@ function AppLayoutComponent({ children, onAddTransaction }: AppLayoutProps) {
         - Total: ~96-130px depending on device safe area
         This ensures last item is fully visible above navigation bar with comfortable spacing
       */}
-      <main 
+      <main
         className="pt-14 px-4 max-w-screen-xl mx-auto w-full"
         style={{
           paddingBottom: 'calc(4rem + env(safe-area-inset-bottom) + 2rem)',
@@ -85,7 +86,8 @@ function AppLayoutComponent({ children, onAddTransaction }: AppLayoutProps) {
           {children}
         </motion.div>
       </main>
-    </div>
+      <StartTrialBanner />
+    </div >
   );
 }
 

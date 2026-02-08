@@ -6,9 +6,10 @@ export interface User {
   email: string;
   name: string;
   avatar?: string;
-  subscriptionStatus?: 'trial' | 'pro' | 'expired';
+  subscriptionStatus?: 'free' | 'trial' | 'pro' | 'expired';
   subscriptionEndDate?: string;
 }
+
 
 const AUTH_STORAGE_KEY = 'kyatflow_auth';
 const USER_STORAGE_KEY = 'kyatflow_user';
@@ -40,6 +41,12 @@ export const authStorage = {
       return null;
     }
   },
+
+  // Set current user (for updates)
+  setUser: (user: User): void => {
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+  },
+
 
   // Get auth token
   getToken: (): string | null => {

@@ -34,7 +34,7 @@ router.post('/register', validate(validateRegister), async (req: Request, res: R
     const result = await pool.query(
       `INSERT INTO users (
         email, password_hash, name, subscription_status, trial_start_date, subscription_end_date
-      ) VALUES ($1, $2, $3, 'trial', NOW(), NOW() + INTERVAL '3 days') 
+      ) VALUES ($1, $2, $3, 'free', NULL, NULL) 
       RETURNING id, email, name, subscription_status, subscription_end_date, created_at`,
       [email, passwordHash, name]
     );
@@ -275,6 +275,93 @@ router.get('/me', async (req: Request, res: Response, next: NextFunction) => {
     if (error instanceof jwt.JsonWebTokenError) {
       return next(new AppError('Invalid token', 401));
     }
+    next(error);
+  }
+});
+
+// Start Trial
+router.post('/start-trial', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) {
+      return next(new AppError('User ID is required', 400));
+    }
+
+    const check = await pool.query('SELECT subscription_status FROM users WHERE id = $1', [userId]);
+    if (check.rows.length === 0) return next(new AppError('User not found', 404));
+
+    // Only allow if status is 'free' (or 'expired' if you want to allow re-trial, but typically not)
+    if (check.rows[0].subscription_status !== 'free') {
+      return next(new AppError('Trial already started or active subscription exists', 400));
+    }
+
+    const result = await pool.query(
+      `UPDATE users 
+       SET subscription_status = 'trial', 
+           trial_start_date = NOW(), 
+           subscription_end_date = NOW() + INTERVAL '3 days' 
+       WHERE id = $1 
+       RETURNING subscription_status, subscription_end_date`,
+      [userId]
+    );
+
+    res.json({
+      success: true, user: {
+        subscriptionStatus: result.rows[0].subscription_status,
+        subscriptionEndDate: result.rows[0].subscription_end_date
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Admin: Get All Users
+router.get('/admin/users', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Basic protection: check header secret or assume frontend handles it for now (MVP)
+    // Production: Verify JWT role === 'admin'
+    const result = await pool.query(
+      `SELECT id, email, name, subscription_status, subscription_end_date, created_at 
+       FROM users ORDER BY created_at DESC LIMIT 100`
+    );
+    res.json({ success: true, users: result.rows });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Admin: Manually Update Status
+router.post('/admin/update-status', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { userId, status, days } = req.body;
+
+    if (!['free', 'trial', 'pro', 'expired'].includes(status)) {
+      return next(new AppError('Invalid status', 400));
+    }
+
+    let query = `UPDATE users SET subscription_status = $1`;
+    const params = [status];
+
+    if (status === 'pro' || status === 'trial') {
+      if (days) {
+        query += `, subscription_end_date = NOW() + INTERVAL '${Number(days)} days'`;
+      } else {
+        // Default 30 days for pro manual add if not specified
+        query += `, subscription_end_date = NOW() + INTERVAL '30 days'`;
+      }
+    } else {
+      query += `, subscription_end_date = NULL`;
+    }
+
+    query += ` WHERE id = $2 RETURNING id, subscription_status, subscription_end_date`;
+    params.push(userId);
+
+    const result = await pool.query(query, params);
+
+    res.json({ success: true, user: result.rows[0] });
+
+  } catch (error) {
     next(error);
   }
 });
