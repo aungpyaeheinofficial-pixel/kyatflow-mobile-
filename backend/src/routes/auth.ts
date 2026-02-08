@@ -82,6 +82,7 @@ router.post('/verify-code', async (req: Request, res: Response, next: NextFuncti
     const { code, userId } = req.body;
 
     if (!code || !userId) {
+      console.log('Verify failed: Missing code or userId', { code, userId });
       return next(new AppError('Code and User ID are required', 400));
     }
 
@@ -92,6 +93,7 @@ router.post('/verify-code', async (req: Request, res: Response, next: NextFuncti
     );
 
     if (codeResult.rows.length === 0) {
+      console.log('Verify failed: Invalid or used code', code);
       return next(new AppError('Invalid or used code', 400));
     }
 
@@ -323,10 +325,12 @@ router.get('/admin/users', authenticateToken, requireAdmin, async (req: Request,
   try {
     // Basic protection: check header secret or assume frontend handles it for now (MVP)
     // Production: Verify JWT role === 'admin'
+    console.log('Admin users requested by:', req.user?.email);
     const result = await pool.query(
       `SELECT id, email, name, subscription_status, subscription_end_date, created_at 
        FROM users ORDER BY created_at DESC LIMIT 100`
     );
+    console.log(`Found ${result.rows.length} users`);
     res.json({ success: true, users: result.rows });
   } catch (error) {
     next(error);
