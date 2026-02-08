@@ -230,6 +230,7 @@ function DashboardContent() {
           total={
             selectedStatType === 'income' ? stats.totalIncome :
               selectedStatType === 'expense' ? stats.totalExpense :
+                stats.netCashFlow
           }
           dateRange={currentDateRange}
         />
