@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { haptics } from '@/lib/haptics';
 import { memo, useCallback } from 'react';
 import { StartTrialBanner } from '@/components/StartTrialBanner';
+import { ExpirationGuard } from '@/components/ExpirationGuard';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -57,35 +58,37 @@ function AppLayoutComponent({ children, onAddTransaction }: AppLayoutProps) {
         </div>
       </motion.header>
 
-      {/* Mobile Bottom Navigation */}
-      <MobileBottomNav />
+      <ExpirationGuard>
+        {/* Mobile Bottom Navigation */}
+        <MobileBottomNav />
 
-      {/* Main Content */}
-      {/* 
-        Dynamic Spacing Calculation:
-        - Bottom Nav Height: 4rem (64px)
-        - Safe Area Inset Bottom: env(safe-area-inset-bottom) (0-34px typically)
-        - Extra Spacing: 2rem (32px) for visual breathing room and to prevent overlap
-        - Total: ~96-130px depending on device safe area
-        This ensures last item is fully visible above navigation bar with comfortable spacing
-      */}
-      <main
-        className="pt-14 px-4 max-w-screen-xl mx-auto w-full"
-        style={{
-          paddingBottom: 'calc(4rem + env(safe-area-inset-bottom) + 2rem)',
-          minHeight: 'calc(100vh - 3.5rem - 4rem)',
-        }}
-      >
-        <motion.div
-          key={location.pathname}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+        {/* Main Content */}
+        {/* 
+          Dynamic Spacing Calculation:
+          - Bottom Nav Height: 4rem (64px)
+          - Safe Area Inset Bottom: env(safe-area-inset-bottom) (0-34px typically)
+          - Extra Spacing: 2rem (32px) for visual breathing room and to prevent overlap
+          - Total: ~96-130px depending on device safe area
+          This ensures last item is fully visible above navigation bar with comfortable spacing
+        */}
+        <main
+          className="pt-14 px-4 max-w-screen-xl mx-auto w-full"
+          style={{
+            paddingBottom: 'calc(4rem + env(safe-area-inset-bottom) + 2rem)',
+            minHeight: 'calc(100vh - 3.5rem - 4rem)',
+          }}
         >
-          {children}
-        </motion.div>
-      </main>
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+          >
+            {children}
+          </motion.div>
+        </main>
+      </ExpirationGuard>
       <StartTrialBanner />
     </div >
   );

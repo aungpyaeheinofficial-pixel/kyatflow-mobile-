@@ -89,7 +89,7 @@ export default function Subscription() {
                     </h1>
                     <p className="text-muted-foreground">
                         {isPro
-                            ? 'Thank you for supporting KyatFlow!'
+                            ? `Your Pro membership expires on ${user?.subscriptionEndDate ? new Date(user.subscriptionEndDate).toLocaleDateString() : 'Never'}.`
                             : `You have ${Math.max(0, remainingTrial)} days remaining in your trial.`}
                     </p>
                 </div>

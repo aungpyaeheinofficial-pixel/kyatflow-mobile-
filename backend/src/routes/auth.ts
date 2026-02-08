@@ -102,9 +102,9 @@ router.post('/verify-code', async (req: Request, res: Response, next: NextFuncti
     // Update user to PRO
     const userResult = await pool.query(
       `UPDATE users 
-       SET subscription_status = 'pro', subscription_end_date = NULL 
+       SET subscription_status = 'pro', subscription_end_date = NOW() + INTERVAL '30 days' 
        WHERE id = $1 
-       RETURNING id, subscription_status`,
+       RETURNING id, subscription_status, subscription_end_date`,
       [userId]
     );
 
@@ -118,6 +118,7 @@ router.post('/verify-code', async (req: Request, res: Response, next: NextFuncti
       success: true,
       user: {
         subscriptionStatus: 'pro',
+        subscriptionEndDate: userResult.rows[0].subscription_end_date
       }
     });
 
