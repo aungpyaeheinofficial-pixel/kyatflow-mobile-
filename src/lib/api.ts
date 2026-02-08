@@ -190,19 +190,19 @@ export const subscriptionApi = {
   },
 
   startTrial: async (userId: string): Promise<any> => {
-    return apiRequest<any>('/start-trial', {
+    return apiRequest<any>('/auth/start-trial', {
       method: 'POST',
       body: JSON.stringify({ userId }),
     });
   },
 
   getAllUsers: async (): Promise<any[]> => {
-    const data = await apiRequest<any>('/admin/users');
+    const data = await apiRequest<any>('/auth/admin/users');
     return data.users;
   },
 
   updateUserStatus: async (userId: string, status: string, days?: number): Promise<any> => {
-    return apiRequest<any>('/admin/update-status', {
+    return apiRequest<any>('/auth/admin/update-status', {
       method: 'POST',
       body: JSON.stringify({ userId, status, days }),
     });
