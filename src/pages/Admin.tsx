@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { authStorage } from '@/lib/auth';
-import { api } from '@/lib/api';
+import { subscriptionApi } from '@/lib/api';
 import { Shield, Key, RefreshCw, Copy, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -36,7 +36,7 @@ export default function Admin() {
         setLoading(true);
         try {
             // We need to implement this endpoint in backend/src/routes/auth.ts
-            const response = await api.post('/auth/generate-code', {});
+            const response = await subscriptionApi.generateCode();
 
             if (response.success) {
                 const newCode = response.code;

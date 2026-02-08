@@ -174,9 +174,16 @@ export const subscriptionApi = {
   },
 
   verifyCode: async (code: string, userId: string): Promise<any> => {
-    return apiRequest('/auth/verify-code', {
+    return apiRequest<any>('/auth/verify-code', {
       method: 'POST',
       body: JSON.stringify({ code, userId }),
+    });
+  },
+
+  generateCode: async (): Promise<any> => {
+    return apiRequest<any>('/auth/generate-code', {
+      method: 'POST',
+      body: JSON.stringify({}),
     });
   },
 };
