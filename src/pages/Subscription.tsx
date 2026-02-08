@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { subscriptionApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
-import { Check, Shield, Zap, RefreshCw, Smartphone } from 'lucide-react';
+import { paymentConfig } from '@/config/payment';
+import { Check, Shield, Zap, RefreshCw, Smartphone, Send } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Subscription() {
@@ -151,37 +152,69 @@ export default function Subscription() {
                         <div className="space-y-4">
                             <h3 className="font-semibold text-lg">Payment Methods</h3>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <Button
-                                    variant="outline"
-                                    className="h-auto py-4 flex flex-col gap-2 border-blue-500/20 hover:bg-blue-500/5 hover:border-blue-500"
-                                    onClick={() => handleNotifyPayment('KPay')}
-                                    disabled={notifying}
-                                >
-                                    <Smartphone className="h-6 w-6 text-blue-600" />
-                                    <span>KPay</span>
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="h-auto py-4 flex flex-col gap-2 border-red-500/20 hover:bg-red-500/5 hover:border-red-500"
-                                    onClick={() => handleNotifyPayment('AYA Pay')}
-                                    disabled={notifying}
-                                >
-                                    <Smartphone className="h-6 w-6 text-red-600" />
-                                    <span>AYA Pay</span>
-                                </Button>
+                            <div className="grid grid-cols-1 gap-4">
+                                <Card className="p-4 border-blue-500/20 bg-blue-500/5">
+                                    <div className="flex items-center gap-4">
+                                        <div className="bg-white p-2 rounded-lg">
+                                            {/* Ideally a QR code image here */}
+                                            <Smartphone className="h-8 w-8 text-blue-600" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-blue-700">{paymentConfig.kpay.name}</h4>
+                                            <p className="text-sm font-medium">{paymentConfig.kpay.phoneNumber}</p>
+                                            <p className="text-xs text-muted-foreground">{paymentConfig.kpay.accountName}</p>
+                                        </div>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="ml-auto text-blue-600"
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(paymentConfig.kpay.phoneNumber);
+                                                toast({ description: "Phone number copied!" });
+                                            }}
+                                        >
+                                            Copy
+                                        </Button>
+                                    </div>
+                                </Card>
+
+                                <Card className="p-4 border-red-500/20 bg-red-500/5">
+                                    <div className="flex items-center gap-4">
+                                        <div className="bg-white p-2 rounded-lg">
+                                            <Smartphone className="h-8 w-8 text-red-600" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-red-700">{paymentConfig.ayapay.name}</h4>
+                                            <p className="text-sm font-medium">{paymentConfig.ayapay.phoneNumber}</p>
+                                            <p className="text-xs text-muted-foreground">{paymentConfig.ayapay.accountName}</p>
+                                        </div>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="ml-auto text-red-600"
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(paymentConfig.ayapay.phoneNumber);
+                                                toast({ description: "Phone number copied!" });
+                                            }}
+                                        >
+                                            Copy
+                                        </Button>
+                                    </div>
+                                </Card>
                             </div>
 
-                            <div className="text-center text-sm text-muted-foreground bg-muted p-3 rounded-lg">
-                                <p className="mb-2">1. Send 20,000 MMK to <strong>09xxxxxxxxx</strong></p>
-                                <p className="mb-2">2. Click button above or contact us on Telegram</p>
+                            <div className="bg-muted p-4 rounded-xl text-center space-y-3">
+                                <p className="text-sm font-medium">After payment, send screenshot to:</p>
                                 <Button
-                                    variant="link"
-                                    className="text-primary p-0 h-auto"
-                                    onClick={() => window.open('https://t.me/kyatflowmm', '_blank')}
+                                    className="w-full gap-2 bg-[#0088cc] hover:bg-[#0077b5]"
+                                    onClick={() => window.open(paymentConfig.telegramSupport, '_blank')}
                                 >
-                                    Connect with @kyatflowmm on Telegram
+                                    <Send className="h-4 w-4" />
+                                    Send Screenshot on Telegram
                                 </Button>
+                                <p className="text-xs text-muted-foreground">
+                                    Admin will send you an Activation Code within 24 hours.
+                                </p>
                             </div>
                         </div>
 

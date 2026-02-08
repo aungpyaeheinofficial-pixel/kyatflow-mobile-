@@ -19,6 +19,7 @@ const Analytics = lazy(() => import("./pages/Analytics"));
 const Parties = lazy(() => import("./pages/Parties"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Subscription = lazy(() => import("./pages/Subscription"));
+const Admin = lazy(() => import("./pages/Admin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Preload Index component for smooth login transition
@@ -100,6 +101,14 @@ const App = () => (
                       element={
                         <ProtectedRoute>
                           <Subscription />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin"
+                      element={
+                        <ProtectedRoute>
+                          <Admin />
                         </ProtectedRoute>
                       }
                     />

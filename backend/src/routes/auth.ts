@@ -122,6 +122,34 @@ router.post('/verify-code', async (req: Request, res: Response, next: NextFuncti
   }
 });
 
+// Generate Code (Admin only)
+router.post('/generate-code', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // In production, check for admin role/email here
+
+    // Generate a random 8-character code
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    // Insert into DB
+    const result = await pool.query(
+      'INSERT INTO redemption_codes (code) VALUES ($1) RETURNING code',
+      [code]
+    );
+
+    res.json({
+      success: true,
+      code: result.rows[0].code
+    });
+
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Payment Notification
 router.post('/payment-notify', async (req: Request, res: Response, next: NextFunction) => {
   try {
