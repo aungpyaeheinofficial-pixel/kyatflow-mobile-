@@ -36,7 +36,9 @@ const apiRequest = async <T>(
   }
 
   const data = await response.json();
-  return data.success ? data.data : data;
+  // If success is true but no 'data' property exists, return the whole object
+  // checking specifically for undefined because data could be null or false
+  return (data.success && data.data !== undefined) ? data.data : data;
 };
 
 // Transform backend data to frontend format
