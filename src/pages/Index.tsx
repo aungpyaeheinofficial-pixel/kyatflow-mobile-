@@ -100,37 +100,34 @@ function DashboardContent() {
   }, [setFAB, transactions]);
 
   return (
-    <>
-      <AppLayout>
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="mb-6"
-        >
-          <div className="flex flex-col gap-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <motion.div
-                  className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 relative overflow-hidden"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-transparent to-primary/10 opacity-50 animate-pulse-subtle" />
-                  <Home className="h-6 w-6 text-primary relative z-10" />
-                </motion.div>
-                <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
-                    {t('dashboard.title')}
-                  </h1>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {t('dashboard.subtitle')}
-                  </p>
-                </div>
-              </div>
+    <AppLayout>
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="mb-6"
+      >
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <motion.div
+              className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 relative overflow-hidden"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-transparent to-primary/10 opacity-50 animate-pulse-subtle" />
+              <Home className="h-6 w-6 text-primary relative z-10" />
+            </motion.div>
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
+                {t('dashboard.title')}
+              </h1>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {t('dashboard.subtitle')}
+              </p>
             </div>
           </div>
+
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
@@ -233,7 +230,6 @@ function DashboardContent() {
           total={
             selectedStatType === 'income' ? stats.totalIncome :
               selectedStatType === 'expense' ? stats.totalExpense :
-                stats.netCashFlow
           }
           dateRange={currentDateRange}
         />
@@ -246,7 +242,6 @@ function DashboardContent() {
         currentIncome={stats.totalIncome}
       />
     </AppLayout >
-    </>
   );
 }
 
