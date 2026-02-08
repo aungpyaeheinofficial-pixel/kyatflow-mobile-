@@ -23,12 +23,12 @@ function MobileBottomNavComponent() {
   }, []);
 
   return (
-    <motion.nav 
+    <motion.nav
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border touch-manipulation shadow-lg"
-      style={{ 
+      style={{
         paddingBottom: 'env(safe-area-inset-bottom)',
         height: 'calc(4rem + env(safe-area-inset-bottom))',
         minHeight: 'calc(4rem + env(safe-area-inset-bottom))',
@@ -65,7 +65,7 @@ function MobileBottomNavComponent() {
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   />
                 )}
-                
+
                 <motion.div
                   animate={{ scale: isActive ? 1.1 : 1 }}
                   transition={{ duration: 0.2 }}

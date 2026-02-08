@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, memo, useCallback } from 'react';
 import { AppLayout } from '@/components/AppLayout';
+import { Button } from '@/components/ui/button';
 import { QuickTransactionForm } from '@/components/QuickTransactionForm';
 import { useSetFAB } from '@/contexts/FABContext';
 import { StatsCards } from '@/components/StatsCards';
@@ -14,9 +15,9 @@ import { CurrencyProvider } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTransactions } from '@/hooks/use-transactions';
 import { useParties } from '@/hooks/use-parties';
-import { 
-  calculateStats, 
-  getDailyCashFlow 
+import {
+  calculateStats,
+  getDailyCashFlow
 } from '@/lib/mockData';
 import { Home, TrendingUp } from 'lucide-react';
 import { DashboardSkeleton } from '@/components/EnhancedSkeleton';
@@ -33,14 +34,14 @@ function DashboardContent() {
   const { transactions, isLoading, createTransaction } = useTransactions();
   const { parties } = useParties();
   const { t } = useLanguage();
-  
+
   const currentDateRange = useMemo(() => {
     if (dateFilter === 'custom' && dateRange) {
       return dateRange;
     }
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
+
     switch (dateFilter) {
       case 'today':
         return { from: today, to: today };
@@ -58,10 +59,10 @@ function DashboardContent() {
         return undefined;
     }
   }, [dateFilter, dateRange]);
-  
+
   const stats = useMemo(() => calculateStats(transactions, currentDateRange, parties), [transactions, currentDateRange, parties]);
   const cashFlowData = useMemo(() => getDailyCashFlow(transactions, currentDateRange), [transactions, currentDateRange]);
-  
+
   const handleDateFilterChange = useCallback((filter: DateFilterType, range?: DateRange) => {
     setDateFilter(filter);
     if (range) {
@@ -89,7 +90,7 @@ function DashboardContent() {
   }, [transactions]);
 
   const setFAB = useSetFAB();
-  
+
   useEffect(() => {
     setFAB({
       onQuickIncome: handleQuickIncome,
@@ -102,7 +103,7 @@ function DashboardContent() {
     <>
       <AppLayout>
         {/* Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
@@ -111,7 +112,7 @@ function DashboardContent() {
           <div className="flex flex-col gap-4">
             <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <motion.div 
+                <motion.div
                   className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 relative overflow-hidden"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -129,29 +130,38 @@ function DashboardContent() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <CurrencyToggle />
-            </div>
           </div>
-        </motion.div>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden sm:flex"
+              onClick={() => window.location.href = '/subscription'}
+            >
+              Upgrade to Pro
+            </Button>
+            <CurrencyToggle />
+          </div>
+        </div>
+      </motion.div>
 
       {/* Date Filter */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.3 }}
         className="mb-6"
       >
-        <DateFilter 
-          value={dateFilter} 
+        <DateFilter
+          value={dateFilter}
           dateRange={dateRange}
           onChange={handleDateFilterChange}
         />
       </motion.div>
 
       {/* Stats Cards - Show immediately with cached data */}
-      <StatsCards 
-        stats={stats} 
+      <StatsCards
+        stats={stats}
         transactions={transactions}
         onCardClick={useCallback((type) => {
           if (type === 'target') {
@@ -169,7 +179,7 @@ function DashboardContent() {
       />
 
       {/* Charts & Recent - Show immediately with cached data */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.3 }}
@@ -185,8 +195,8 @@ function DashboardContent() {
           <CashFlowChart data={cashFlowData} />
           <div className="space-y-4">
             <RecentTransactions transactions={transactions} />
-            <TopExpenseCategories 
-              transactions={transactions} 
+            <TopExpenseCategories
+              transactions={transactions}
               dateRange={currentDateRange}
             />
           </div>
@@ -194,50 +204,48 @@ function DashboardContent() {
       </motion.div>
 
       {/* Quick Transaction Form Modal */}
-        <QuickTransactionForm
-          open={showTransactionForm}
-          onOpenChange={setShowTransactionForm}
-          initialType={transactionType}
-          lastTransaction={repeatTransaction}
+      <QuickTransactionForm
+        open={showTransactionForm}
+        onOpenChange={setShowTransactionForm}
+        initialType={transactionType}
+        lastTransaction={repeatTransaction}
+        transactions={transactions}
+        onSubmit={(data) => {
+          createTransaction({
+            date: data.date || new Date(),
+            amount: data.amount,
+            type: data.type,
+            category: data.category,
+            paymentMethod: data.paymentMethod,
+            notes: data.notes,
+            partyId: data.partyId,
+          });
+        }}
+      />
+
+      {/* Stat Detail Dialog */}
+      {selectedStatType && (selectedStatType === 'income' || selectedStatType === 'expense' || selectedStatType === 'net') && (
+        <StatDetailDialog
+          open={!!selectedStatType}
+          onOpenChange={(open) => !open && setSelectedStatType(null)}
+          type={selectedStatType}
           transactions={transactions}
-          onSubmit={(data) => {
-            createTransaction({
-              date: data.date || new Date(),
-              amount: data.amount,
-              type: data.type,
-              category: data.category,
-              paymentMethod: data.paymentMethod,
-              notes: data.notes,
-              partyId: data.partyId,
-            });
-          }}
-        />
-
-          {/* Stat Detail Dialog */}
-        {selectedStatType && (selectedStatType === 'income' || selectedStatType === 'expense' || selectedStatType === 'net') && (
-          <StatDetailDialog
-            open={!!selectedStatType}
-            onOpenChange={(open) => !open && setSelectedStatType(null)}
-            type={selectedStatType}
-            transactions={transactions}
-            total={
-              selectedStatType === 'income' ? stats.totalIncome :
+          total={
+            selectedStatType === 'income' ? stats.totalIncome :
               selectedStatType === 'expense' ? stats.totalExpense :
-              stats.netCashFlow
-            }
-            dateRange={currentDateRange}
-          />
-        )}
-
-        {/* Target Dialog */}
-        <TargetDialog
-          open={showTargetDialog}
-          onOpenChange={setShowTargetDialog}
-          currentIncome={stats.totalIncome}
+                stats.netCashFlow
+          }
+          dateRange={currentDateRange}
         />
-      </AppLayout>
+      )}
 
-      {/* Floating Action Button - Outside AppLayout */}
+      {/* Target Dialog */}
+      <TargetDialog
+        open={showTargetDialog}
+        onOpenChange={setShowTargetDialog}
+        currentIncome={stats.totalIncome}
+      />
+    </AppLayout >
     </>
   );
 }
