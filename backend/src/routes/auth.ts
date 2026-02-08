@@ -325,7 +325,7 @@ router.get('/admin/users', authenticateToken, requireAdmin, async (req: Request,
   try {
     // Basic protection: check header secret or assume frontend handles it for now (MVP)
     // Production: Verify JWT role === 'admin'
-    console.log('Admin users requested by:', req.user?.email);
+    console.log('Admin users requested by:', (req as any).user?.email);
     const result = await pool.query(
       `SELECT id, email, name, subscription_status, subscription_end_date, created_at 
        FROM users ORDER BY created_at DESC LIMIT 100`
