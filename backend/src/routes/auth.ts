@@ -441,6 +441,10 @@ router.post('/reset-password', async (req: Request, res: Response, next: NextFun
     const { token, newPassword } = req.body;
     if (!token || !newPassword) return next(new AppError('Token and Password required', 400));
 
+    if (newPassword.length < 8) {
+      return next(new AppError('Password must be at least 8 characters long', 400));
+    }
+
     // Find user by token and expiry
     const result = await pool.query(
       'SELECT id FROM users WHERE reset_token = $1 AND reset_expires > NOW()',
