@@ -99,8 +99,25 @@ export default function Admin() {
     };
 
     const copyCode = (code: string) => {
-        navigator.clipboard.writeText(code);
-        toast({ title: "Copied to clipboard" });
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(code);
+            toast({ title: "Copied to clipboard" });
+        } else {
+            // Fallback for HTTP (insecure context) where navigator.clipboard is undefined
+            const textArea = document.createElement("textarea");
+            textArea.value = code;
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                toast({ title: "Copied to clipboard" });
+            } catch (err) {
+                toast({ title: "Failed to copy", description: "Please copy manually", variant: "destructive" });
+            }
+            document.body.removeChild(textArea);
+        }
     };
 
     if (user?.email !== 'admin@kyatflow.com') { // Simple protection
