@@ -18,6 +18,7 @@ const Transactions = lazy(() => import("./pages/Transactions"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Parties = lazy(() => import("./pages/Parties"));
 const Settings = lazy(() => import("./pages/Settings"));
+const Subscription = lazy(() => import("./pages/Subscription"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Preload Index component for smooth login transition
@@ -51,57 +52,65 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
-              <Suspense fallback={<LoadingSkeleton />}>
-                <Routes>
-                  <Route path="/login" element={<Login />} />
-                  <Route
-                    path="/"
-                    element={
-                      <ProtectedRoute>
-                        <Index />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/transactions"
-                    element={
-                      <ProtectedRoute>
-                        <Transactions />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/analytics"
-                    element={
-                      <ProtectedRoute>
-                        <Analytics />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/parties"
-                    element={
-                      <ProtectedRoute>
-                        <Parties />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/settings"
-                    element={
-                      <ProtectedRoute>
-                        <Settings />
-                      </ProtectedRoute>
-                    }
-                  />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </BrowserRouter>
-          </TooltipProvider>
-        </FABProvider>
-      </MyanmarNumbersProvider>
+                <Suspense fallback={<LoadingSkeleton />}>
+                  <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route
+                      path="/"
+                      element={
+                        <ProtectedRoute>
+                          <Index />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/transactions"
+                      element={
+                        <ProtectedRoute>
+                          <Transactions />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/analytics"
+                      element={
+                        <ProtectedRoute>
+                          <Analytics />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/parties"
+                      element={
+                        <ProtectedRoute>
+                          <Parties />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/settings"
+                      element={
+                        <ProtectedRoute>
+                          <Settings />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/subscription"
+                      element={
+                        <ProtectedRoute>
+                          <Subscription />
+                        </ProtectedRoute>
+                      }
+                    />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </BrowserRouter>
+            </TooltipProvider>
+          </FABProvider>
+        </MyanmarNumbersProvider>
       </LanguageProvider>
     </QueryClientProvider>
   </ErrorBoundary>

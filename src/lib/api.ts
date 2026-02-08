@@ -1,6 +1,7 @@
 // API Service Layer - Backend API Integration
 import { Transaction, Party } from './types';
 import { authStorage } from './auth';
+import { transactionStorage, partyStorage } from './storage';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:9800/api';
 
@@ -164,6 +165,22 @@ export const partyApi = {
   },
 };
 
+export const subscriptionApi = {
+  notifyPayment: async (data: { userId: string; username: string; paymentMethod: string; transactionId?: string }): Promise<any> => {
+    return apiRequest('/auth/payment-notify', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  verifyCode: async (code: string, userId: string): Promise<any> => {
+    return apiRequest('/auth/verify-code', {
+      method: 'POST',
+      body: JSON.stringify({ code, userId }),
+    });
+  },
+};
+
 // Export data as JSON
 export const exportData = async (): Promise<{ transactions: Transaction[]; parties: Party[] }> => {
   const transactions = await transactionApi.getAll();
@@ -176,12 +193,12 @@ export const importData = async (data: { transactions: Transaction[]; parties: P
   // Clear existing data
   transactionStorage.clear();
   partyStorage.clear();
-  
+
   // Import transactions
   for (const transaction of data.transactions) {
     await transactionApi.create(transaction);
   }
-  
+
   // Import parties
   for (const party of data.parties) {
     await partyApi.create(party);

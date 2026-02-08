@@ -1,9 +1,10 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import pool from '../db/connection';
 import { validate, validateLogin, validateRegister } from '../middleware/validation';
 import { AppError } from '../middleware/errorHandler';
+import nodemailer from 'nodemailer';
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ const JWT_SECRET: string = (process.env.JWT_SECRET || 'your-secret-key-change-in
 const JWT_EXPIRES_IN: string = process.env.JWT_EXPIRES_IN || '7d';
 
 // Register
-router.post('/register', validate(validateRegister), async (req, res, next) => {
+router.post('/register', validate(validateRegister), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password, name } = req.body;
 
@@ -29,9 +30,12 @@ router.post('/register', validate(validateRegister), async (req, res, next) => {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Create user
+    // Create user with trial subscription (3 days)
     const result = await pool.query(
-      'INSERT INTO users (email, password_hash, name) VALUES ($1, $2, $3) RETURNING id, email, name, created_at',
+      `INSERT INTO users (
+        email, password_hash, name, subscription_status, trial_start_date, subscription_end_date
+      ) VALUES ($1, $2, $3, 'trial', NOW(), NOW() + INTERVAL '3 days') 
+      RETURNING id, email, name, subscription_status, subscription_end_date, created_at`,
       [email, passwordHash, name]
     );
 
@@ -45,11 +49,11 @@ router.post('/register', validate(validateRegister), async (req, res, next) => {
 
     // Generate token
     const signOptions: SignOptions = {
-      // @ts-ignore - StringValue type is not exported but string values work correctly at runtime
+      // @ts-ignore
       expiresIn: JWT_EXPIRES_IN,
     };
     const token = jwt.sign(
-      { userId: user.id, email: user.email, name: user.name },
+      { userId: user.id, email: user.email, name: user.name, role: user.subscription_status },
       JWT_SECRET,
       signOptions
     );
@@ -61,6 +65,8 @@ router.post('/register', validate(validateRegister), async (req, res, next) => {
         id: user.id,
         email: user.email,
         name: user.name,
+        subscriptionStatus: user.subscription_status,
+        subscriptionEndDate: user.subscription_end_date,
       },
     });
   } catch (error) {
@@ -68,14 +74,103 @@ router.post('/register', validate(validateRegister), async (req, res, next) => {
   }
 });
 
-// Login
-router.post('/login', validate(validateLogin), async (req, res, next) => {
+// Verify Code (Redeem Premium)
+router.post('/verify-code', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { code, userId } = req.body;
+
+    if (!code || !userId) {
+      return next(new AppError('Code and User ID are required', 400));
+    }
+
+    // Check code
+    const codeResult = await pool.query(
+      'SELECT * FROM redemption_codes WHERE code = $1 AND is_used = false',
+      [code]
+    );
+
+    if (codeResult.rows.length === 0) {
+      return next(new AppError('Invalid or used code', 400));
+    }
+
+    const redemptionCode = codeResult.rows[0];
+
+    // Update user to PRO
+    const userResult = await pool.query(
+      `UPDATE users 
+       SET subscription_status = 'pro', subscription_end_date = NULL 
+       WHERE id = $1 
+       RETURNING id, subscription_status`,
+      [userId]
+    );
+
+    // Mark code as used
+    await pool.query(
+      'UPDATE redemption_codes SET is_used = true, used_by = $1, used_at = NOW() WHERE id = $2',
+      [userId, redemptionCode.id]
+    );
+
+    res.json({
+      success: true,
+      user: {
+        subscriptionStatus: 'pro',
+      }
+    });
+
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Payment Notification
+router.post('/payment-notify', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { userId, username, paymentMethod, transactionId } = req.body;
+
+    // TODO: Move email config to environment variables
+    // For now, we mock the success if no SMTP is configured, or try to send if ENV is present.
+    // Assuming the user will configure SMTP later.
+
+    if (!process.env.SMTP_HOST) {
+      console.log('Mock Email sent to admin:', { userId, username, paymentMethod });
+      return res.json({ success: true, message: 'Notification received (Mock Mode)' });
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT) || 587,
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+
+    const info = await transporter.sendMail({
+      from: '"KyatFlow System" <system@kyatflow.com>',
+      to: process.env.ADMIN_EMAIL || 'admin@kyatflow.com', // User's email
+      subject: `New Payment: ${username}`,
+      text: `User ${username} (ID: ${userId}) claims to have paid via ${paymentMethod}.\nPlease verify and send them a code.`,
+      html: `<p>User <b>${username}</b> (ID: ${userId}) claims to have paid via <b>${paymentMethod}</b>.</p><p>Please verify and send them a code.</p>`,
+    });
+
+    res.json({ success: true, message: 'Notification sent' });
+
+  } catch (error) {
+    console.error('Email error:', error);
+    // Don't block the UI flow even if email fails
+    res.json({ success: true, message: 'Notification logged' });
+  }
+});
+
+// Login (Updated to return subscription info)
+router.post('/login', validate(validateLogin), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
 
     // Find user
     const result = await pool.query(
-      'SELECT id, email, password_hash, name FROM users WHERE email = $1',
+      'SELECT id, email, password_hash, name, subscription_status, subscription_end_date FROM users WHERE email = $1',
       [email]
     );
 
@@ -94,7 +189,7 @@ router.post('/login', validate(validateLogin), async (req, res, next) => {
 
     // Generate token
     const signOptions: SignOptions = {
-      // @ts-ignore - StringValue type is not exported but string values work correctly at runtime
+      // @ts-ignore
       expiresIn: JWT_EXPIRES_IN,
     };
     const token = jwt.sign(
@@ -110,6 +205,8 @@ router.post('/login', validate(validateLogin), async (req, res, next) => {
         id: user.id,
         email: user.email,
         name: user.name,
+        subscriptionStatus: user.subscription_status,
+        subscriptionEndDate: user.subscription_end_date,
       },
     });
   } catch (error) {
@@ -117,8 +214,8 @@ router.post('/login', validate(validateLogin), async (req, res, next) => {
   }
 });
 
-// Get current user
-router.get('/me', async (req, res, next) => {
+// Get current user (Updated)
+router.get('/me', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -130,7 +227,7 @@ router.get('/me', async (req, res, next) => {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
 
     const result = await pool.query(
-      'SELECT id, email, name, avatar, created_at FROM users WHERE id = $1',
+      'SELECT id, email, name, avatar, created_at, subscription_status, subscription_end_date FROM users WHERE id = $1',
       [decoded.userId]
     );
 
@@ -140,7 +237,11 @@ router.get('/me', async (req, res, next) => {
 
     res.json({
       success: true,
-      user: result.rows[0],
+      user: {
+        ...result.rows[0],
+        subscriptionStatus: result.rows[0].subscription_status,
+        subscriptionEndDate: result.rows[0].subscription_end_date
+      }
     });
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
@@ -151,4 +252,3 @@ router.get('/me', async (req, res, next) => {
 });
 
 export default router;
-

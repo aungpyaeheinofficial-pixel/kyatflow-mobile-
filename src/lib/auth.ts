@@ -6,6 +6,8 @@ export interface User {
   email: string;
   name: string;
   avatar?: string;
+  subscriptionStatus?: 'trial' | 'pro' | 'expired';
+  subscriptionEndDate?: string;
 }
 
 const AUTH_STORAGE_KEY = 'kyatflow_auth';
