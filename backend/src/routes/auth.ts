@@ -373,4 +373,101 @@ router.post('/admin/update-status', authenticateToken, requireAdmin, async (req:
   }
 });
 
+// Forgot Password
+router.post('/forgot-password', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email } = req.body;
+    if (!email) return next(new AppError('Email is required', 400));
+
+    // Find user
+    const result = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (result.rows.length === 0) {
+      // Security: Don't reveal if user exists. Just return success.
+      return res.json({ success: true, message: 'If account exists, email sent.' });
+    }
+    const user = result.rows[0];
+
+    // Generate Token
+    const crypto = require('crypto');
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetExpires = new Date(Date.now() + 3600000); // 1 hour
+
+    // Save to DB
+    await pool.query(
+      'UPDATE users SET reset_token = $1, reset_expires = $2 WHERE id = $3',
+      [resetToken, resetExpires, user.id]
+    );
+
+    // Send Email
+    if (process.env.SMTP_HOST) {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: Number(process.env.SMTP_PORT) === 465, // True for 465, false for 587
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+
+      const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3555'}/reset-password?token=${resetToken}`;
+
+      await transporter.sendMail({
+        from: `"KyatFlow Support" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: 'Password Reset Request',
+        html: `
+                <p>You requested a password reset.</p>
+                <p>Click the link below to verify and reset your password:</p>
+                <a href="${resetUrl}">${resetUrl}</a>
+                <p>This link expires in 1 hour.</p>
+                <p>If you did not request this, please ignore it.</p>
+            `,
+      });
+      console.log(`Reset email sent to ${email}`);
+    } else {
+      console.log(`Mock Reset URL: http://localhost:3555/reset-password?token=${resetToken}`);
+    }
+
+    res.json({ success: true, message: 'If account exists, email sent.' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Reset Password
+router.post('/reset-password', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) return next(new AppError('Token and Password required', 400));
+
+    // Find user by token and expiry
+    const result = await pool.query(
+      'SELECT id FROM users WHERE reset_token = $1 AND reset_expires > NOW()',
+      [token]
+    );
+
+    if (result.rows.length === 0) {
+      return next(new AppError('Invalid or expired token', 400));
+    }
+    const user = result.rows[0];
+
+    // Hash new password
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    // Update user
+    await pool.query(
+      `UPDATE users 
+       SET password_hash = $1, reset_token = NULL, reset_expires = NULL 
+       WHERE id = $2`,
+      [passwordHash, user.id]
+    );
+
+    res.json({ success: true, message: 'Password reset successful. Please login.' });
+
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;

@@ -175,6 +175,20 @@ export const subscriptionApi = {
     });
   },
 
+  forgotPassword: async (email: string): Promise<any> => {
+    return apiRequest<any>('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  resetPassword: async (token: string, newPassword: string): Promise<any> => {
+    return apiRequest<any>('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, newPassword }),
+    });
+  },
+
   verifyCode: async (code: string, userId: string): Promise<any> => {
     return apiRequest<any>('/auth/verify-code', {
       method: 'POST',

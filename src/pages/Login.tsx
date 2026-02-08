@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef, useCallback, memo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -257,6 +257,17 @@ function Login() {
                         </button>
                       </div>
                     </div>
+
+                    {isLogin && (
+                      <div className="flex justify-end pt-1">
+                        <Link
+                          to="/forgot-password"
+                          className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+                        >
+                          Forgot Password?
+                        </Link>
+                      </div>
+                    )}
 
                     <Button
                       type="submit"
