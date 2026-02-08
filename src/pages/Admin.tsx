@@ -36,10 +36,11 @@ export default function Admin() {
     const user = authStorage.getCurrentUser();
 
     useEffect(() => {
+        // Fix: Use user.email as dependency to avoid infinite loop (user object is recreated on every render)
         if (user?.email === 'admin@kyatflow.com') {
             fetchUsers();
         }
-    }, [user]);
+    }, [user?.email]);
 
     const fetchUsers = async () => {
         setUsersLoading(true);
