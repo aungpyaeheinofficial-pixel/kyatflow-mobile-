@@ -12,11 +12,12 @@ export interface AuthRequest extends Request {
 }
 
 export const authenticateToken = (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const authHeader = req.headers['authorization'];
+  const authReq = req as AuthRequest;
+  const authHeader = authReq.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
   if (!token) {
@@ -30,8 +31,8 @@ export const authenticateToken = (
       return next(new AppError('Invalid or expired token', 401));
     }
 
-    req.userId = decoded.userId;
-    req.user = {
+    authReq.userId = decoded.userId;
+    authReq.user = {
       id: decoded.userId,
       email: decoded.email,
       name: decoded.name,
