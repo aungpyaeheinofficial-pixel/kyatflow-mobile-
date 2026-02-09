@@ -10,6 +10,8 @@ import { subscriptionApi } from '@/lib/api';
 import { Shield, Key, RefreshCw, Copy, Check, Users, ShieldCheck, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+
+
 // Mock data interface - in real app, fetch from API
 interface RedemptionCode {
     id: string;
@@ -236,7 +238,7 @@ export default function Admin() {
                                         </div>
 
                                         <div className="flex items-center gap-2">
-                                            {u.subscription_status !== 'pro' && (
+                                            {u.subscription_status !== 'pro' && u.subscription_status !== 'expired' && (
                                                 <Button size="sm" onClick={() => manualUpgrade(u.id, 'pro')} className="bg-green-600 hover:bg-green-700 text-white">
                                                     Upgrade to Pro
                                                 </Button>
@@ -244,6 +246,16 @@ export default function Admin() {
                                             {u.subscription_status === 'pro' && (
                                                 <Button size="sm" variant="outline" onClick={() => manualUpgrade(u.id, 'free')}>
                                                     Revoke Pro
+                                                </Button>
+                                            )}
+                                            {u.subscription_status !== 'expired' && (
+                                                <Button size="sm" variant="destructive" onClick={() => manualUpgrade(u.id, 'expired')}>
+                                                    Force Expire
+                                                </Button>
+                                            )}
+                                            {u.subscription_status === 'expired' && (
+                                                <Button size="sm" variant="outline" onClick={() => manualUpgrade(u.id, 'trial')}>
+                                                    Reset to Trial
                                                 </Button>
                                             )}
                                         </div>

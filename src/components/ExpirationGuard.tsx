@@ -24,7 +24,7 @@ export function ExpirationGuard({ children }: ExpirationGuardProps) {
     const now = new Date();
 
     // Check if expired
-    const isExpired = endDate && now > endDate;
+    const isExpired = (endDate && now > endDate) || user.subscriptionStatus === 'expired';
 
     if (isExpired) {
         return (
