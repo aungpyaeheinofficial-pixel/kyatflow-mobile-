@@ -130,14 +130,15 @@ function DashboardContent() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Button
               variant="outline"
               size="sm"
-              className="hidden sm:flex"
+              className="flex gap-2"
               onClick={() => window.location.href = '/subscription'}
             >
-              Upgrade to Pro
+              <span className="hidden sm:inline">Upgrade to Pro</span>
+              <span className="sm:hidden">Pro</span>
             </Button>
             <CurrencyToggle />
           </div>
