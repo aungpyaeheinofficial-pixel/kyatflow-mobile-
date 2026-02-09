@@ -3,6 +3,8 @@ import { AppLayout } from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
 import { QuickTransactionForm } from '@/components/QuickTransactionForm';
 import { useSetFAB } from '@/contexts/FABContext';
+import { StartTrialBanner } from '@/components/StartTrialBanner';
+import { BudgetOverview } from '@/components/BudgetOverview';
 import { StatsCards } from '@/components/StatsCards';
 import { CashFlowChart } from '@/components/CashFlowChart';
 import { RecentTransactions } from '@/components/RecentTransactions';
@@ -188,7 +190,12 @@ function DashboardContent() {
           </div>
           <h2 className="text-lg font-semibold">{t('dashboard.financialOverview')}</h2>
         </div>
-        <div className="grid gap-4 grid-cols-1">
+        {/* Budget Overview */}
+        <div className="mb-4 sm:mb-6">
+          <BudgetOverview />
+        </div>
+
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
           <CashFlowChart data={cashFlowData} />
           <div className="space-y-4">
             <RecentTransactions transactions={transactions} />
