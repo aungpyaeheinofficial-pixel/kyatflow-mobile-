@@ -28,11 +28,11 @@ import { securityStorage, hashPin, verifyPin, SecuritySettings } from '@/lib/sec
 import { auditLog } from '@/lib/auditLog';
 import { authStorage } from '@/lib/auth';
 import { useNavigate } from 'react-router-dom';
-import { 
-  User, 
-  Bell, 
-  Shield, 
-  Database, 
+import {
+  User,
+  Bell,
+  Shield,
+  Database,
   Globe,
   Moon,
   Smartphone,
@@ -42,6 +42,7 @@ import {
   Edit,
   Trash2,
   Lock,
+  Wallet,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -200,8 +201,8 @@ function SettingsContent() {
       title: 'Account',
       icon: User,
       items: [
-        { 
-          label: 'Profile Settings', 
+        {
+          label: 'Profile Settings',
           description: currentUser ? `Signed in as ${currentUser.email}` : 'Manage your account details',
           hasToggle: false,
           onClick: () => {
@@ -211,8 +212,8 @@ function SettingsContent() {
             });
           },
         },
-        { 
-          label: 'Business Information', 
+        {
+          label: 'Business Information',
           description: 'Update your business profile',
           hasToggle: false,
           onClick: () => {
@@ -225,33 +226,45 @@ function SettingsContent() {
       ],
     },
     {
+      title: 'Financials',
+      icon: Wallet,
+      items: [
+        {
+          label: 'Budget Settings',
+          description: 'Set spending limits and alerts',
+          hasToggle: false,
+          onClick: () => navigate('/budgets'),
+        }
+      ]
+    },
+    {
       title: 'Preferences',
       icon: Globe,
       items: [
-        { 
-          label: t('settings.language'), 
-          description: t('settings.languageDesc'), 
+        {
+          label: t('settings.language'),
+          description: t('settings.languageDesc'),
           hasToggle: false,
           onClick: () => setShowLanguageDialog(true),
         },
-        { 
-          label: 'Myanmar Numbers', 
-          description: 'Use ၁၂၃ instead of 123', 
-          hasToggle: true, 
-          enabled: showMyanmarNumbers, 
+        {
+          label: 'Myanmar Numbers',
+          description: 'Use ၁၂၃ instead of 123',
+          hasToggle: true,
+          enabled: showMyanmarNumbers,
           onToggle: toggleMyanmarNumbers,
         },
-        { 
-          label: 'Currency Display', 
-          description: 'Default to Lakhs (သိန်း)', 
-          hasToggle: true, 
+        {
+          label: 'Currency Display',
+          description: 'Default to Lakhs (သိန်း)',
+          hasToggle: true,
           enabled: showLakhs,
           onToggle: toggleLakhs,
         },
-        { 
-          label: 'Dark Mode', 
-          description: 'Enable dark theme', 
-          hasToggle: true, 
+        {
+          label: 'Dark Mode',
+          description: 'Enable dark theme',
+          hasToggle: true,
           enabled: darkMode,
           onToggle: () => handleDarkModeToggle(!darkMode),
           icon: Moon,
@@ -262,24 +275,24 @@ function SettingsContent() {
       title: 'Notifications',
       icon: Bell,
       items: [
-        { 
-          label: 'Push Notifications', 
-          description: 'Transaction alerts', 
-          hasToggle: true, 
+        {
+          label: 'Push Notifications',
+          description: 'Transaction alerts',
+          hasToggle: true,
           enabled: notificationSettings.pushNotifications,
           onToggle: () => handleNotificationToggle('pushNotifications'),
         },
-        { 
-          label: 'SMS Reminders', 
-          description: 'Payment due reminders', 
-          hasToggle: true, 
+        {
+          label: 'SMS Reminders',
+          description: 'Payment due reminders',
+          hasToggle: true,
           enabled: notificationSettings.smsReminders,
           onToggle: () => handleNotificationToggle('smsReminders'),
         },
-        { 
-          label: 'Email Reports', 
-          description: 'Weekly summary', 
-          hasToggle: true, 
+        {
+          label: 'Email Reports',
+          description: 'Weekly summary',
+          hasToggle: true,
           enabled: notificationSettings.emailReports,
           onToggle: () => handleNotificationToggle('emailReports'),
         },
@@ -289,12 +302,12 @@ function SettingsContent() {
       title: 'Security',
       icon: Shield,
       items: [
-        { 
-          label: 'PIN Lock', 
-          description: securitySettings.pinRequired 
-            ? 'PIN is set. Tap to change or remove.' 
-            : 'Require PIN for transactions > 1M MMK', 
-          hasToggle: true, 
+        {
+          label: 'PIN Lock',
+          description: securitySettings.pinRequired
+            ? 'PIN is set. Tap to change or remove.'
+            : 'Require PIN for transactions > 1M MMK',
+          hasToggle: true,
           enabled: securitySettings.pinRequired,
           onToggle: () => {
             if (securitySettings.pinRequired) {
@@ -304,11 +317,11 @@ function SettingsContent() {
             }
           },
         },
-        { 
-          label: 'Biometric Lock', 
-          description: 'Fingerprint/Face ID', 
-          hasToggle: true, 
-          enabled: securitySettings.biometricEnabled, 
+        {
+          label: 'Biometric Lock',
+          description: 'Fingerprint/Face ID',
+          hasToggle: true,
+          enabled: securitySettings.biometricEnabled,
           onToggle: async () => {
             if (!securitySettings.biometricEnabled) {
               // Check if biometric is available
@@ -331,9 +344,9 @@ function SettingsContent() {
             });
           },
         },
-        { 
-          label: 'Transaction Limit', 
-          description: `Require PIN above ${(securitySettings.transactionLimit / 1000000).toFixed(1)}M MMK`, 
+        {
+          label: 'Transaction Limit',
+          description: `Require PIN above ${(securitySettings.transactionLimit / 1000000).toFixed(1)}M MMK`,
           hasToggle: false,
           onClick: () => setShowTransactionLimitDialog(true),
         },
@@ -349,8 +362,8 @@ function SettingsContent() {
       title: 'Data',
       icon: Database,
       items: [
-        { 
-          label: 'Export Data', 
+        {
+          label: 'Export Data',
           description: 'Download your transactions',
           hasToggle: false,
           onClick: () => {
@@ -369,15 +382,15 @@ function SettingsContent() {
             }
           },
         },
-        { 
-          label: 'Backup Settings', 
-          description: 'Auto backup to cloud', 
-          hasToggle: true, 
+        {
+          label: 'Backup Settings',
+          description: 'Auto backup to cloud',
+          hasToggle: true,
           enabled: backupEnabled,
           onToggle: () => handleBackupToggle(!backupEnabled),
         },
-        { 
-          label: 'Clear Cache', 
+        {
+          label: 'Clear Cache',
           description: 'Free up storage space',
           hasToggle: false,
           onClick: () => {
@@ -419,11 +432,11 @@ function SettingsContent() {
     };
     setSecuritySettings(updated);
     securityStorage.save(updated);
-    auditLog.log({ 
-      action: 'update', 
-      entityType: 'settings', 
-      entityId: 'security', 
-      changes: { pin: { from: null, to: 'set' } } 
+    auditLog.log({
+      action: 'update',
+      entityType: 'settings',
+      entityId: 'security',
+      changes: { pin: { from: null, to: 'set' } }
     });
     setPin('');
     setConfirmPin('');
@@ -474,11 +487,11 @@ function SettingsContent() {
     };
     setSecuritySettings(updated);
     securityStorage.save(updated);
-    auditLog.log({ 
-      action: 'update', 
-      entityType: 'settings', 
-      entityId: 'security', 
-      changes: { pin: { from: 'old', to: 'changed' } } 
+    auditLog.log({
+      action: 'update',
+      entityType: 'settings',
+      entityId: 'security',
+      changes: { pin: { from: 'old', to: 'changed' } }
     });
     setPin('');
     setConfirmPin('');
@@ -515,11 +528,11 @@ function SettingsContent() {
     };
     setSecuritySettings(updated);
     securityStorage.save(updated);
-    auditLog.log({ 
-      action: 'update', 
-      entityType: 'settings', 
-      entityId: 'security', 
-      changes: { pin: { from: 'set', to: null } } 
+    auditLog.log({
+      action: 'update',
+      entityType: 'settings',
+      entityId: 'security',
+      changes: { pin: { from: 'set', to: null } }
     });
     setOldPin('');
     setShowPinChange(false);
@@ -537,11 +550,11 @@ function SettingsContent() {
     };
     setSecuritySettings(updated);
     securityStorage.save(updated);
-    auditLog.log({ 
-      action: 'update', 
-      entityType: 'settings', 
-      entityId: 'security', 
-      changes: { transactionLimit: { from: securitySettings.transactionLimit, to: limit } } 
+    auditLog.log({
+      action: 'update',
+      entityType: 'settings',
+      entityId: 'security',
+      changes: { transactionLimit: { from: securitySettings.transactionLimit, to: limit } }
     });
   };
 
@@ -553,11 +566,11 @@ function SettingsContent() {
     };
     setSecuritySettings(updated);
     securityStorage.save(updated);
-    auditLog.log({ 
-      action: 'update', 
-      entityType: 'settings', 
-      entityId: 'security', 
-      changes: { autoLockMinutes: { from: securitySettings.autoLockMinutes, to: minutes } } 
+    auditLog.log({
+      action: 'update',
+      entityType: 'settings',
+      entityId: 'security',
+      changes: { autoLockMinutes: { from: securitySettings.autoLockMinutes, to: minutes } }
     });
   };
 
@@ -574,8 +587,8 @@ function SettingsContent() {
       {/* Settings Sections */}
       <div className="space-y-6">
         {settingsSections.map((section, sectionIndex) => (
-          <Card 
-            key={section.title} 
+          <Card
+            key={section.title}
             className="animate-slide-up"
             style={{ animationDelay: `${sectionIndex * 50}ms` }}
           >
@@ -588,7 +601,7 @@ function SettingsContent() {
             <CardContent className="p-0">
               <div className="divide-y divide-border">
                 {section.items.map((item, index) => (
-                  <div 
+                  <div
                     key={item.label}
                     className="flex items-center justify-between px-6 py-4 hover:bg-secondary/50 transition-colors cursor-pointer"
                     onClick={() => {
@@ -605,8 +618,8 @@ function SettingsContent() {
                       <p className="text-sm text-muted-foreground mt-0.5">{item.description}</p>
                     </div>
                     {item.hasToggle ? (
-                      <Switch 
-                        checked={item.enabled || false} 
+                      <Switch
+                        checked={item.enabled || false}
                         onCheckedChange={(checked) => {
                           if (item.onToggle) {
                             item.onToggle();
@@ -638,7 +651,7 @@ function SettingsContent() {
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </div>
-              <div 
+              <div
                 className="flex items-center justify-between px-6 py-4 hover:bg-destructive/5 transition-colors cursor-pointer"
                 onClick={() => {
                   authStorage.logout();
@@ -762,8 +775,8 @@ function SettingsContent() {
             )}
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               className="flex-1"
               onClick={handlePinRemove}
               disabled={!oldPin}
@@ -772,8 +785,8 @@ function SettingsContent() {
               Remove PIN
             </Button>
             <div className="flex gap-2 flex-1">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="flex-1"
                 onClick={() => {
                   setShowPinChange(false);
@@ -784,7 +797,7 @@ function SettingsContent() {
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 className="flex-1"
                 onClick={handlePinChange}
                 disabled={!oldPin || (pin && (pin.length < 4 || pin !== confirmPin))}
