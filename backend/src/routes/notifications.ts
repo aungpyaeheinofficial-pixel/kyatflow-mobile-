@@ -1,57 +1,47 @@
 
-import { Router, Request, Response } from 'express';
+import express from 'express';
 import pool from '../db/connection';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateToken, AuthRequest } from '../middleware/auth';
 
-const router = Router();
+const router = express.Router();
 
-// Get unread notifications (limit 50 recent)
-router.get('/', authenticateToken, async (req: Request, res: Response) => {
+router.use(authenticateToken);
+
+// Get Unread Notifications
+router.get('/', async (req: AuthRequest, res, next) => {
     try {
-        const { userId } = req.body;
-
-        // Fetch unread first, then recent read ones if needed
+        const userId = req.userId!;
         const result = await pool.query(
             `SELECT * FROM notifications 
-       WHERE user_id = $1 
-       ORDER BY is_read ASC, created_at DESC 
-       LIMIT 50`,
+             WHERE user_id = $1 
+             ORDER BY created_at DESC 
+             LIMIT 50`,
             [userId]
         );
-
-        res.json(result.rows);
+        res.json({
+            success: true,
+            data: result.rows
+        });
     } catch (error) {
-        console.error('Error fetching notifications:', error);
-        res.status(500).json({ error: 'Server error' });
+        next(error);
     }
 });
 
-// Mark notification as read
-router.put('/:id/read', authenticateToken, async (req: Request, res: Response) => {
+// Mark as Read
+router.put('/:id/read', async (req: AuthRequest, res, next) => {
     try {
-        const { userId } = req.body;
+        const userId = req.userId!;
         const { id } = req.params;
 
-        const result = await pool.query(
-            `UPDATE notifications 
-       SET is_read = TRUE 
-       WHERE id = $1 AND user_id = $2 
-       RETURNING *`,
+        await pool.query(
+            `UPDATE notifications SET is_read = true WHERE id = $1 AND user_id = $2`,
             [id, userId]
         );
 
-        if (result.rowCount === 0) {
-            return res.status(404).json({ error: 'Notification not found' });
-        }
-
-        res.json(result.rows[0]);
+        res.json({ success: true });
     } catch (error) {
-        console.error('Error marking notification read:', error);
-        res.status(500).json({ error: 'Server error' });
+        next(error);
     }
 });
-
-// Helper to create notification (internal use, but maybe exposed for testing)
-// We'll keep it internal to logic for now.
 
 export default router;

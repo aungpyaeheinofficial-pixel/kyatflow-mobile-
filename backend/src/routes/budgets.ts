@@ -1,56 +1,73 @@
 
-import { Router, Request, Response } from 'express';
+import express from 'express';
 import pool from '../db/connection';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateToken, AuthRequest } from '../middleware/auth';
 
-const router = Router();
+const router = express.Router();
 
-// Get budget settings
-router.get('/', authenticateToken, async (req: Request, res: Response) => {
+router.use(authenticateToken);
+
+// Get User Budgets
+router.get('/', async (req: AuthRequest, res, next) => {
     try {
-        const { userId } = req.body; // extracted by middleware
+        const userId = req.userId!;
         const result = await pool.query('SELECT * FROM budgets WHERE user_id = $1', [userId]);
 
         if (result.rows.length === 0) {
+            // Return defaults if no budget set
             return res.json({
-                daily_limit: 0,
-                weekly_limit: 0,
-                monthly_limit: 0,
-                yearly_limit: 0
+                success: true,
+                data: {
+                    daily_limit: 0,
+                    weekly_limit: 0,
+                    monthly_limit: 0,
+                    yearly_limit: 0
+                }
             });
         }
 
-        res.json(result.rows[0]);
+        res.json({
+            success: true,
+            data: result.rows[0]
+        });
     } catch (error) {
-        console.error('Error fetching budgets:', error);
-        res.status(500).json({ error: 'Server error' });
+        next(error);
     }
 });
 
-// Update budget settings
-router.post('/', authenticateToken, async (req: Request, res: Response) => {
+// Update/Set Budgets
+router.post('/', async (req: AuthRequest, res, next) => {
     try {
-        const { userId, daily_limit, weekly_limit, monthly_limit, yearly_limit } = req.body;
+        const userId = req.userId!;
+        const { daily_limit, weekly_limit, monthly_limit, yearly_limit } = req.body;
 
-        // Upsert budget
-        const result = await pool.query(
-            `INSERT INTO budgets (user_id, daily_limit, weekly_limit, monthly_limit, yearly_limit, updated_at)
-       VALUES ($1, $2, $3, $4, $5, NOW())
-       ON CONFLICT (user_id) 
-       DO UPDATE SET 
-         daily_limit = EXCLUDED.daily_limit,
-         weekly_limit = EXCLUDED.weekly_limit,
-         monthly_limit = EXCLUDED.monthly_limit,
-         yearly_limit = EXCLUDED.yearly_limit,
-         updated_at = NOW()
-       RETURNING *`,
-            [userId, daily_limit || 0, weekly_limit || 0, monthly_limit || 0, yearly_limit || 0]
-        );
+        // Upsert logic
+        const existing = await pool.query('SELECT id FROM budgets WHERE user_id = $1', [userId]);
 
-        res.json(result.rows[0]);
+        let result;
+        if (existing.rows.length > 0) {
+            result = await pool.query(
+                `UPDATE budgets 
+                 SET daily_limit = $1, weekly_limit = $2, monthly_limit = $3, yearly_limit = $4, updated_at = CURRENT_TIMESTAMP
+                 WHERE user_id = $5
+                 RETURNING *`,
+                [daily_limit || 0, weekly_limit || 0, monthly_limit || 0, yearly_limit || 0, userId]
+            );
+        } else {
+            result = await pool.query(
+                `INSERT INTO budgets (user_id, daily_limit, weekly_limit, monthly_limit, yearly_limit)
+                 VALUES ($1, $2, $3, $4, $5)
+                 RETURNING *`,
+                [userId, daily_limit || 0, weekly_limit || 0, monthly_limit || 0, yearly_limit || 0]
+            );
+        }
+
+        res.json({
+            success: true,
+            data: result.rows[0]
+        });
     } catch (error) {
-        console.error('Error updating budgets:', error);
-        res.status(500).json({ error: 'Server error' });
+        next(error);
     }
 });
 
