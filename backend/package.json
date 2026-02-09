@@ -9,6 +9,7 @@
     "start": "node dist/server.js",
     "migrate": "node dist/db/migrate.js",
     "migrate:dev": "tsx src/db/migrate.ts",
+    "migrate:v4": "tsx src/db/migrate-v4.ts",
     "pm2:start": "pm2 start ecosystem.config.js",
     "pm2:stop": "pm2 stop kyatflow-backend",
     "pm2:restart": "pm2 restart kyatflow-backend",
