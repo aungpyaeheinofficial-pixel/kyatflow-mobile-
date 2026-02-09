@@ -8,14 +8,15 @@ const router = express.Router();
 router.use(authenticateToken);
 
 // Get User Budgets
-router.get('/', async (req: AuthRequest, res, next) => {
+router.get('/', async (req, res, next) => {
     try {
-        const userId = req.userId!;
+        const authReq = req as AuthRequest;
+        const userId = authReq.userId!;
         const result = await pool.query('SELECT * FROM budgets WHERE user_id = $1', [userId]);
 
         if (result.rows.length === 0) {
             // Return defaults if no budget set
-            return res.json({
+            res.json({
                 success: true,
                 data: {
                     daily_limit: 0,
@@ -24,6 +25,7 @@ router.get('/', async (req: AuthRequest, res, next) => {
                     yearly_limit: 0
                 }
             });
+            return;
         }
 
         res.json({
@@ -36,9 +38,10 @@ router.get('/', async (req: AuthRequest, res, next) => {
 });
 
 // Update/Set Budgets
-router.post('/', async (req: AuthRequest, res, next) => {
+router.post('/', async (req, res, next) => {
     try {
-        const userId = req.userId!;
+        const authReq = req as AuthRequest;
+        const userId = authReq.userId!;
         const { daily_limit, weekly_limit, monthly_limit, yearly_limit } = req.body;
 
         // Upsert logic

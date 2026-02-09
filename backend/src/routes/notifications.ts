@@ -8,9 +8,10 @@ const router = express.Router();
 router.use(authenticateToken);
 
 // Get Unread Notifications
-router.get('/', async (req: AuthRequest, res, next) => {
+router.get('/', async (req, res, next) => {
     try {
-        const userId = req.userId!;
+        const authReq = req as AuthRequest;
+        const userId = authReq.userId!;
         const result = await pool.query(
             `SELECT * FROM notifications 
              WHERE user_id = $1 
@@ -28,9 +29,10 @@ router.get('/', async (req: AuthRequest, res, next) => {
 });
 
 // Mark as Read
-router.put('/:id/read', async (req: AuthRequest, res, next) => {
+router.put('/:id/read', async (req, res, next) => {
     try {
-        const userId = req.userId!;
+        const authReq = req as AuthRequest;
+        const userId = authReq.userId!;
         const { id } = req.params;
 
         await pool.query(
