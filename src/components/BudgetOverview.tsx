@@ -10,6 +10,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { kyatsToLakhs } from '@/lib/formatters';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Edit } from 'lucide-react';
 
 export function BudgetOverview() {
     const [budgets, setBudgets] = useState<any>(null);
@@ -119,11 +120,14 @@ export function BudgetOverview() {
 
     return (
         <Card>
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
                 <CardTitle className="flex items-center gap-2 text-base font-semibold">
                     <Wallet className="h-4 w-4 text-primary" />
                     Budget Overview
                 </CardTitle>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate('/budgets')}>
+                    <Edit className="h-4 w-4 text-muted-foreground" />
+                </Button>
             </CardHeader>
             <CardContent className="space-y-4">
                 {renderBudgetRow("Daily", budgets.daily_limit, spending.day)}

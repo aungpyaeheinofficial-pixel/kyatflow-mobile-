@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { budgetApi } from '@/lib/api';
-import { Wallet, Save, Target, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Wallet, Save, Target, TrendingUp, AlertTriangle, X } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
 
@@ -90,6 +90,14 @@ export default function Budgets() {
                                     placeholder="0.00"
                                 />
                                 <div className="text-sm font-medium">MMK</div>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleChange('daily_limit', '0')}
+                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>
@@ -109,6 +117,14 @@ export default function Budgets() {
                                     placeholder="0.00"
                                 />
                                 <div className="text-sm font-medium">MMK</div>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleChange('weekly_limit', '0')}
+                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>
@@ -128,6 +144,14 @@ export default function Budgets() {
                                     placeholder="0.00"
                                 />
                                 <div className="text-sm font-medium">MMK</div>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleChange('monthly_limit', '0')}
+                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>
@@ -147,6 +171,14 @@ export default function Budgets() {
                                     placeholder="0.00"
                                 />
                                 <div className="text-sm font-medium">MMK</div>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleChange('yearly_limit', '0')}
+                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>
