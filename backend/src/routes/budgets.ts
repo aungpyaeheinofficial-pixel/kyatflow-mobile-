@@ -45,7 +45,7 @@ router.post('/', async (req, res, next) => {
         const { daily_limit, weekly_limit, monthly_limit, yearly_limit } = req.body;
 
         // Upsert logic
-        const existing = await pool.query('SELECT id FROM budgets WHERE user_id = $1', [userId]);
+        const existing = await pool.query('SELECT user_id FROM budgets WHERE user_id = $1', [userId]);
 
         let result;
         if (existing.rows.length > 0) {
