@@ -15,7 +15,7 @@ This guide covers the entire process of buying a domain on Namecheap, connecting
 ### 2. Add Site to Cloudflare
 1.  Log in to [dash.cloudflare.com](https://dash.cloudflare.com) (Sign up for free if needed).
 2.  Click **"Add a Site"** (top right).
-3.  Enter your domain name (e.g., `kyatflow.com`).
+3.  Enter your domain name: `kyatflow.it.com`.
 4.  Select the **Free Plan** (at the bottom) and click **Continue**.
 5.  Cloudflare will scan for existing DNS records. Review them and click **Continue**.
 6.  Cloudflare will provide **2 Nameservers** (e.g., `amy.ns.cloudflare.com` and `bob.ns.cloudflare.com`). **Copy these.**

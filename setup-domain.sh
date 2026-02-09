@@ -5,7 +5,7 @@
 
 set -e
 
-DOMAIN="kyatflow.com"
+DOMAIN="kyatflow.it.com"
 VPS_IP="167.172.90.182"
 FRONTEND_PATH="/var/www/kyatflow"
 BACKEND_PATH="/var/www/html/kyatflow-mobile-/backend"
