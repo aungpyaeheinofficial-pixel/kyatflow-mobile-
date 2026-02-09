@@ -13,7 +13,7 @@ router.use(authenticateToken);
 router.get('/', async (req: AuthRequest, res, next) => {
   try {
     const userId = req.userId!;
-    
+
     // Optional query parameters
     const { startDate, endDate, type, category, partyId } = req.query;
 
@@ -139,6 +139,67 @@ router.post('/', validate(validateTransaction), async (req: AuthRequest, res, ne
       );
     }
 
+    // Check Budgets (Only for expenses)
+    if (type === 'expense') {
+      const checkBudgets = async () => {
+        try {
+          // Get User Budgets
+          const budgetRes = await pool.query('SELECT * FROM budgets WHERE user_id = $1', [userId]);
+          if (budgetRes.rows.length === 0) return;
+          const budgets = budgetRes.rows[0];
+          const txnDate = new Date(date);
+
+          // Helper to check limit
+          const checkLimit = async (period: 'day' | 'week' | 'month' | 'year', limit: number) => {
+            if (!limit || limit <= 0) return;
+
+            let startDate;
+            if (period === 'day') startDate = new Date(txnDate.setHours(0, 0, 0, 0)).toISOString();
+            else if (period === 'week') {
+              const d = new Date(txnDate);
+              const day = d.getDay();
+              const diff = d.getDate() - day + (day == 0 ? -6 : 1); // adjust when day is sunday
+              startDate = new Date(d.setDate(diff));
+              startDate.setHours(0, 0, 0, 0);
+            }
+            else if (period === 'month') startDate = new Date(txnDate.getFullYear(), txnDate.getMonth(), 1).toISOString();
+            else if (period === 'year') startDate = new Date(txnDate.getFullYear(), 0, 1).toISOString();
+
+            const spendingRes = await pool.query(
+              `SELECT SUM(amount) as total FROM transactions 
+                         WHERE user_id = $1 AND type = 'expense' AND date >= $2`,
+              [userId, startDate]
+            );
+            const totalSpent = parseFloat(spendingRes.rows[0].total || '0');
+
+            if (totalSpent > limit) {
+              // Check if notification already exists for this period? Maybe too spammy.
+              // For now, just insert.
+              await pool.query(
+                `INSERT INTO notifications (user_id, title, message, type)
+                             VALUES ($1, $2, $3, $4)`,
+                [
+                  userId,
+                  `${period.charAt(0).toUpperCase() + period.slice(1)} Budget Exceeded`,
+                  `You have exceeded your ${period} budget of ${limit}. Total spent: ${totalSpent}.`,
+                  'warning'
+                ]
+              );
+            }
+          };
+
+          await checkLimit('day', parseFloat(budgets.daily_limit));
+          await checkLimit('week', parseFloat(budgets.weekly_limit));
+          await checkLimit('month', parseFloat(budgets.monthly_limit));
+          await checkLimit('year', parseFloat(budgets.yearly_limit));
+
+        } catch (err) {
+          console.error('Budget check failed', err); // Don't block transaction
+        }
+      };
+      checkBudgets();
+    }
+
     res.status(201).json({
       success: true,
       data: {
@@ -175,8 +236,8 @@ router.put('/:id', validate(validateTransaction), async (req: AuthRequest, res, 
 
     // Revert old party balance if it had a party
     if (oldTransaction.party_id) {
-      const oldBalanceAdjustment = oldTransaction.type === 'income' 
-        ? -oldTransaction.amount 
+      const oldBalanceAdjustment = oldTransaction.type === 'income'
+        ? -oldTransaction.amount
         : oldTransaction.amount;
       await pool.query(
         'UPDATE parties SET balance = balance + $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
@@ -253,8 +314,8 @@ router.delete('/:id', async (req: AuthRequest, res, next) => {
 
     // Revert party balance if it had a party
     if (transaction.party_id) {
-      const balanceAdjustment = transaction.type === 'income' 
-        ? -transaction.amount 
+      const balanceAdjustment = transaction.type === 'income'
+        ? -transaction.amount
         : transaction.amount;
       await pool.query(
         'UPDATE parties SET balance = balance + $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',

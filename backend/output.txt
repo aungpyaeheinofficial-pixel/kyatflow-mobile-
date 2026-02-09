@@ -1,0 +1,5 @@
+﻿Testing Email Configuration...
+Host: smtp.zoho.com
+Port: 465
+User: larpitaw445@zoho.com
+Email configuration is INVALID.

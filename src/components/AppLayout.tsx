@@ -11,6 +11,7 @@ import { haptics } from '@/lib/haptics';
 import { memo, useCallback } from 'react';
 import { StartTrialBanner } from '@/components/StartTrialBanner';
 import { ExpirationGuard } from '@/components/ExpirationGuard';
+import { NotificationCenter } from '@/components/NotificationCenter';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -52,6 +53,7 @@ function AppLayoutComponent({ children, onAddTransaction }: AppLayoutProps) {
           </h1>
         </div>
         <div className="flex items-center gap-2">
+          <NotificationCenter />
           <SidebarFAB
             onClick={handleSidebarFABClick}
           />

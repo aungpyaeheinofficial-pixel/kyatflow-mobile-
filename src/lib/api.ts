@@ -223,6 +223,29 @@ export const subscriptionApi = {
   }
 };
 
+export const budgetApi = {
+  get: async (): Promise<any> => {
+    return apiRequest<any>('/budgets');
+  },
+  update: async (budgets: any): Promise<any> => {
+    return apiRequest<any>('/budgets', {
+      method: 'POST',
+      body: JSON.stringify(budgets),
+    });
+  }
+};
+
+export const notificationApi = {
+  getUnread: async (): Promise<any[]> => {
+    return apiRequest<any[]>('/notifications');
+  },
+  markRead: async (id: string): Promise<any> => {
+    return apiRequest<any>(`/notifications/${id}/read`, {
+      method: 'PUT',
+    });
+  }
+};
+
 // Export data as JSON
 export const exportData = async (): Promise<{ transactions: Transaction[]; parties: Party[] }> => {
   const transactions = await transactionApi.getAll();

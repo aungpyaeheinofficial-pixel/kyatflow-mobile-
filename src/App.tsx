@@ -23,6 +23,7 @@ const Admin = lazy(() => import("./pages/Admin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Budgets = lazy(() => import("./pages/Budgets"));
 
 // Preload Index component for smooth login transition
 if (typeof window !== 'undefined') {
@@ -116,6 +117,14 @@ const App = () => (
                         </ProtectedRoute>
                       }
                     />
+                    <Route
+                      path="/budgets"
+                      element={
+                        <ProtectedRoute>
+                          <Budgets />
+                        </ProtectedRoute>
+                      }
+                    />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
@@ -126,7 +135,7 @@ const App = () => (
         </MyanmarNumbersProvider>
       </LanguageProvider>
     </QueryClientProvider>
-  </ErrorBoundary>
+  </ErrorBoundary >
 );
 
 export default App;

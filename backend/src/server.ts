@@ -8,6 +8,8 @@ import authRoutes from './routes/auth';
 import transactionRoutes from './routes/transactions';
 import partyRoutes from './routes/parties';
 import analyticsRoutes from './routes/analytics';
+import budgetRoutes from './routes/budgets';
+import notificationRoutes from './routes/notifications';
 import { errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
@@ -59,6 +61,8 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/parties', partyRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/budgets', budgetRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // 404 handler
 app.use((req, res) => {
