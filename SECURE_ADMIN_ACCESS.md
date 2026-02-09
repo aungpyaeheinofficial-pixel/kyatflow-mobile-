@@ -72,10 +72,10 @@ Now that `/admin` is blocked from the public internet, you must use an SSH Tunne
 Do not SSH yet. Run this command on your local Windows machine:
 
 ```powershell
-ssh -L 8888:localhost:80 root@YOUR_VPS_IP
+ssh -L 8888:localhost:3555 root@YOUR_VPS_IP
 ```
 
-*   **-L 8888:localhost:80**: This forwards your local port `8888` to the VPS port `80` (where Nginx is listening).
+*   **-L 8888:localhost:3555**: This forwards your local port `8888` to the VPS port `3555` (where Nginx or your app is listening).
 *   Replace `YOUR_VPS_IP` with your actual VPS IP (e.g., `167.172.90.182`).
 
 ### 2. Login to Admin Panel
