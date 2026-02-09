@@ -57,7 +57,7 @@ echo "3️⃣ Configuring Nginx for domain..."
 cat > /etc/nginx/sites-available/kyatflow <<'EOF'
 server {
     listen 80;
-    server_name kyatflow.com www.kyatflow.com;
+    server_name kyatflow.it.com www.kyatflow.it.com;
 
     root /var/www/kyatflow;
     index index.html;
